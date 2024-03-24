@@ -154,6 +154,8 @@ func createSession(w http.ResponseWriter, r *http.Request, user db.User) {
 		Name:  "semaphore",
 		Value: encoded,
 		Path:  "/",
+		// expires in 1 year
+		Expires: time.Now().AddDate(1, 0, 0),
 	})
 }
 
