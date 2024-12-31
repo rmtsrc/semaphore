@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/rand"
 	"net/http"
@@ -16,13 +17,13 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/coreos/go-oidc/v3/oidc"
+	"github.com/go-ldap/ldap/v3"
+	"github.com/gorilla/mux"
 	"github.com/semaphoreui/semaphore/api/helpers"
 	"github.com/semaphoreui/semaphore/db"
 	"github.com/semaphoreui/semaphore/pkg/random"
 	"github.com/semaphoreui/semaphore/util"
-	"github.com/coreos/go-oidc/v3/oidc"
-	"github.com/go-ldap/ldap/v3"
-	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 	"golang.org/x/oauth2"
@@ -174,6 +175,8 @@ func createSession(w http.ResponseWriter, r *http.Request, user db.User) {
 		Name:  "semaphore",
 		Value: encoded,
 		Path:  "/",
+		// expires in 1 year
+		Expires: time.Now().AddDate(1, 0, 0),
 	})
 }
 
@@ -202,7 +205,7 @@ func loginByPassword(store db.Store, login string, password string) (user db.Use
 func loginByLDAP(store db.Store, ldapUser db.User) (user db.User, err error) {
 	user, err = store.GetUserByLoginOrEmail(ldapUser.Username, ldapUser.Email)
 
-	if err == db.ErrNotFound {
+	if errors.Is(err, db.ErrNotFound) {
 		user, err = store.CreateUserWithoutPassword(ldapUser)
 	}
 
@@ -296,7 +299,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		if err == db.ErrNotFound {
+		if errors.Is(err, db.ErrNotFound) {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
@@ -329,7 +332,7 @@ func logout(w http.ResponseWriter, r *http.Request) {
 func getOidcProvider(id string, ctx context.Context, redirectPath string) (*oidc.Provider, *oauth2.Config, error) {
 	provider, ok := util.Config.OidcProviders[id]
 	if !ok {
-		return nil, nil, fmt.Errorf("No such provider: %s", id)
+		return nil, nil, fmt.Errorf("no such provider: %s", id)
 	}
 	config := oidc.ProviderConfig{
 		IssuerURL:   provider.Endpoint.IssuerURL,
@@ -392,14 +395,14 @@ func getOidcProvider(id string, ctx context.Context, redirectPath string) (*oidc
 		Scopes:       provider.Scopes,
 	}
 	if len(oauthConfig.RedirectURL) == 0 {
-		rurl, err := url.JoinPath(util.Config.WebHost, "api/auth/oidc", id, "redirect")
+		redirectURL, err := url.JoinPath(util.Config.WebHost, "api/auth/oidc", id, "redirect")
 		if err != nil {
 			return nil, nil, err
 		}
 
-		oauthConfig.RedirectURL = rurl
+		oauthConfig.RedirectURL = redirectURL
 
-		if rurl != redirectPath {
+		if redirectURL != redirectPath {
 			oauthConfig.RedirectURL += redirectPath
 		}
 	}

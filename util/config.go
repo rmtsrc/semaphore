@@ -729,7 +729,7 @@ func (d *DbConfig) GetConnectionString(includeDbName bool) (connectionString str
 				dbName)
 		} else {
 			connectionString = fmt.Sprintf(
-				"postgres://%s:%s@%s",
+				"postgres://%s:%s@%s/postgres",
 				dbUser,
 				url.QueryEscape(dbPass),
 				dbHost)
