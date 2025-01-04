@@ -276,16 +276,18 @@ func (d *SqlDb) GetAllAdmins() (users []db.User, err error) {
 	return
 }
 
-func (d *SqlDb) AddTotpVerification(userID int, url string) (totp db.UserTotp, err error) {
+func (d *SqlDb) AddTotpVerification(userID int, url string, recoveryHash string) (totp db.UserTotp, err error) {
 
 	totp.UserID = userID
 	totp.URL = url
+	totp.RecoveryHash = recoveryHash
 	totp.Created = db.GetParsedTime(time.Now().UTC())
 
 	res, err := d.exec(
-		"insert into user__totp (user_id, url, created) values (?, ?, ?)",
+		"insert into user__totp (user_id, url, recovery_hash, created) values (?, ?, ?, ?)",
 		totp.UserID,
 		totp.URL,
+		totp.RecoveryHash,
 		totp.Created)
 
 	if err != nil {
