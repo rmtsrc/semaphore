@@ -919,3 +919,8 @@ func GenerateRecoveryCode() (code string, hash string, err error) {
 	hash = string(hashBytes)
 	return
 }
+
+func VerifyRecoveryCode(inputCode, storedHash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(storedHash), []byte(inputCode))
+	return err == nil
+}
