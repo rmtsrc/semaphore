@@ -139,7 +139,7 @@ func (t *TaskRunner) logPipe(reader *bufio.Reader) {
 		line, err = Readln(reader)
 	}
 
-	if err != nil && err.Error() != "EOF" {
+	if err.Error() != "EOF" {
 		//don't panic on these errors, sometimes it throws not dangerous "read |0: file already closed" error
 		util.LogWarningWithFields(err, log.Fields{"error": "Failed to read TaskRunner output"})
 	}
