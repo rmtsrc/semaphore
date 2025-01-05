@@ -201,6 +201,7 @@ export default {
       itemComponent: TaskLogViewRecord,
       item: {},
       output: [],
+      outputBuffer: [],
       user: {},
     };
   },
@@ -232,8 +233,26 @@ export default {
   },
 
   async created() {
+    this.outputInterval = setInterval(() => {
+      this.$nextTick(() => {
+        const len = this.outputBuffer.length;
+        if (len === 0) {
+          return;
+        }
+
+        this.output.push(...this.outputBuffer.splice(0, len));
+
+        if (this.$refs.records) {
+          this.$refs.records.scrollToBottom();
+        }
+      });
+    }, 500);
     socket.addListener((data) => this.onWebsocketDataReceived(data));
     await this.loadData();
+  },
+
+  beforeDestroy() {
+    clearInterval(this.outputInterval);
   },
 
   methods: {
@@ -269,6 +288,8 @@ export default {
     reset() {
       this.item = {};
       this.output = [];
+      this.outputBuffer = [];
+      this.outputInterval = null;
       this.user = {};
     },
 
@@ -285,16 +306,16 @@ export default {
           });
           break;
         case 'log':
-          this.output.push({
+          this.outputBuffer.push({
             ...data,
             id: data.time + data.output,
           });
 
-          this.$nextTick(() => {
-            if (this.$refs.records) {
-              this.$refs.records.scrollToBottom();
-            }
-          });
+          // this.$nextTick(() => {
+          //   if (this.$refs.records) {
+          //     this.$refs.records.scrollToBottom();
+          //   }
+          // });
 
           break;
         default:
