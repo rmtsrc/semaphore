@@ -77,7 +77,14 @@
       </v-row>
     </v-container>
 
-    <div class="task-log-records" ref="output">
+    <VirtualList
+      class="task-log-records"
+      :data-key="'id'"
+      :data-sources="output"
+      :data-component="itemComponent"
+      :estimate-size="22"
+      :keeps="60"
+    >
       <div class="task-log-records__record" v-for="record in output" :key="record.id">
         <div class="task-log-records__time">
           {{ record.time | formatTime }}
@@ -85,7 +92,7 @@
         <div class="task-log-records__output" v-html="$options.filters.formatLog(record.output)">
         </div>
       </div>
-    </div>
+    </VirtualList>
 
     <v-btn
       color="success"
@@ -179,15 +186,18 @@ $task-log-message-height: 48px;
 import axios from 'axios';
 import TaskStatus from '@/components/TaskStatus.vue';
 import socket from '@/socket';
+import VirtualList from 'vue-virtual-scroll-list';
+import TaskLogViewRecord from '@/components/TaskLogViewRecord.vue';
 
 export default {
-  components: { TaskStatus },
+  components: { TaskStatus, VirtualList },
   props: {
     itemId: Number,
     projectId: Number,
   },
   data() {
     return {
+      itemComponent: TaskLogViewRecord,
       item: {},
       output: [],
       user: {},
@@ -274,10 +284,13 @@ export default {
           });
           break;
         case 'log':
-          this.output.push(data);
-          setTimeout(() => {
-            this.$refs.output.scrollTop = this.$refs.output.scrollHeight;
-          }, 200);
+          this.output.push({
+            ...data,
+            id: data.time + data.output,
+          });
+          // setTimeout(() => {
+          //   this.$refs.output.scrollTop = this.$refs.output.scrollHeight;
+          // }, 200);
           break;
         default:
           break;
@@ -295,7 +308,10 @@ export default {
         method: 'get',
         url: `/api/project/${this.projectId}/tasks/${this.itemId}/output`,
         responseType: 'json',
-      })).data;
+      })).data.map((item) => ({
+        ...item,
+        id: item.time + item.output,
+      }));
 
       this.user = this.item.user_id ? (await axios({
         method: 'get',
