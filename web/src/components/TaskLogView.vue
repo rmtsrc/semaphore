@@ -84,6 +84,7 @@
       :data-component="itemComponent"
       :estimate-size="22"
       :keeps="60"
+      ref="records"
     >
       <div class="task-log-records__record" v-for="record in output" :key="record.id">
         <div class="task-log-records__time">
@@ -288,9 +289,13 @@ export default {
             ...data,
             id: data.time + data.output,
           });
-          // setTimeout(() => {
-          //   this.$refs.output.scrollTop = this.$refs.output.scrollHeight;
-          // }, 200);
+
+          this.$nextTick(() => {
+            if (this.$refs.records) {
+              this.$refs.records.scrollToBottom();
+            }
+          });
+
           break;
         default:
           break;
