@@ -92,6 +92,6 @@ func (p *runningJob) logPipe(reader *bufio.Reader) {
 
 	if err != nil && err.Error() != "EOF" {
 		//don't panic on these errors, sometimes it throws not dangerous "read |0: file already closed" error
-		util.LogWarningWithFields(err, log.Fields{"error": "Failed to read TaskRunner output"})
+		util.LogWarningF(err, log.Fields{"error": "Failed to read TaskRunner output"})
 	}
 }

@@ -127,7 +127,7 @@ func (t *TaskRunner) SetStatus(status task_logger.TaskStatus) {
 func (t *TaskRunner) panicOnError(err error, msg string) {
 	if err != nil {
 		t.Log(msg)
-		util.LogPanicWithFields(err, log.Fields{"error": msg})
+		util.LogPanicF(err, log.Fields{"error": msg})
 	}
 }
 
@@ -141,7 +141,7 @@ func (t *TaskRunner) logPipe(reader *bufio.Reader) {
 
 	if err.Error() != "EOF" {
 		//don't panic on these errors, sometimes it throws not dangerous "read |0: file already closed" error
-		util.LogWarningWithFields(err, log.Fields{"error": "Failed to read TaskRunner output"})
+		util.LogWarningF(err, log.Fields{"error": "Failed to read TaskRunner output"})
 	}
 }
 

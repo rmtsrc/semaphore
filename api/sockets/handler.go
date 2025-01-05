@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/semaphoreui/semaphore/util"
 	"github.com/gorilla/context"
 	"github.com/gorilla/websocket"
+	"github.com/semaphoreui/semaphore/util"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -44,15 +44,18 @@ type connection struct {
 func (c *connection) readPump() {
 	defer func() {
 		h.unregister <- c
-		util.LogErrorWithFields(c.ws.Close(), log.Fields{"error": "Error closing websocket"})
+		_ = c.ws.Close()
+		//util.LogErrorWithFields(c.ws.Close(), log.Fields{"error": "Error closing websocket"})
 	}()
 
 	c.ws.SetReadLimit(maxMessageSize)
-	util.LogErrorWithFields(c.ws.SetReadDeadline(time.Now().Add(pongWait)), log.Fields{"error": "Socket state corrupt"})
-	c.ws.SetPongHandler(func(string) error {
-		util.LogErrorWithFields(c.ws.SetReadDeadline(time.Now().Add(pongWait)), log.Fields{"error": "Socket state corrupt"})
-		return nil
-	})
+
+	//util.LogErrorWithFields(c.ws.SetReadDeadline(time.Now().Add(pongWait)), log.Fields{"error": "Socket state corrupt"})
+	//
+	//c.ws.SetPongHandler(func(string) error {
+	//	util.LogErrorWithFields(c.ws.SetReadDeadline(time.Now().Add(pongWait)), log.Fields{"error": "Socket state corrupt"})
+	//	return nil
+	//})
 
 	for {
 		_, message, err := c.ws.ReadMessage()
@@ -69,7 +72,13 @@ func (c *connection) readPump() {
 
 // write writes a message with the given message type and payload.
 func (c *connection) write(mt int, payload []byte) error {
-	util.LogErrorWithFields(c.ws.SetWriteDeadline(time.Now().Add(writeWait)), log.Fields{"error": "Socket state corrupt"})
+
+	err := c.ws.SetWriteDeadline(time.Now().Add(writeWait))
+
+	util.LogErrorF(err, log.Fields{
+		"error": "Cannot set write deadline",
+	})
+
 	return c.ws.WriteMessage(mt, payload)
 }
 
@@ -79,23 +88,30 @@ func (c *connection) writePump() {
 
 	defer func() {
 		ticker.Stop()
-		util.LogError(c.ws.Close())
+		_ = c.ws.Close()
+		//util.LogError(c.ws.Close())
 	}()
 
 	for {
 		select {
 		case message, ok := <-c.send:
 			if !ok {
-				util.LogError(c.write(websocket.CloseMessage, []byte{}))
+				util.LogErrorF(c.write(websocket.CloseMessage, []byte{}), log.Fields{
+					"error": "Cannot send close message",
+				})
 				return
 			}
 			if err := c.write(websocket.TextMessage, message); err != nil {
-				util.LogError(err)
+				util.LogErrorF(err, log.Fields{
+					"error": "Cannot send text message",
+				})
 				return
 			}
 		case <-ticker.C:
 			if err := c.write(websocket.PingMessage, []byte{}); err != nil {
-				util.LogError(err)
+				util.LogErrorF(err, log.Fields{
+					"error": "Cannot send ping message",
+				})
 				return
 			}
 		}

@@ -25,7 +25,7 @@ type JobLogger struct {
 }
 
 func (e *JobLogger) ActionError(err error, action string, message string) {
-	util.LogErrorWithFields(err, log.Fields{
+	util.LogErrorF(err, log.Fields{
 		"type":    "action",
 		"context": e.Context,
 		"action":  action,
