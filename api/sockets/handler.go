@@ -45,17 +45,17 @@ func (c *connection) readPump() {
 	defer func() {
 		h.unregister <- c
 		_ = c.ws.Close()
-		//util.LogErrorF(c.ws.Close(), log.Fields{"error": "Error closing websocket"})
 	}()
 
 	c.ws.SetReadLimit(maxMessageSize)
 
-	//util.LogErrorF(c.ws.SetReadDeadline(time.Now().Add(pongWait)), log.Fields{"error": "Socket state corrupt"})
-	//
-	//c.ws.SetPongHandler(func(string) error {
-	//	util.LogErrorF(c.ws.SetReadDeadline(time.Now().Add(pongWait)), log.Fields{"error": "Socket state corrupt"})
-	//	return nil
-	//})
+	util.LogErrorF(c.ws.SetReadDeadline(time.Now().Add(pongWait)), log.Fields{"error": "Cannot set read deadline"})
+
+	c.ws.SetPongHandler(func(string) error {
+		err := c.ws.SetReadDeadline(time.Now().Add(pongWait))
+		util.LogErrorF(err, log.Fields{"error": "Cannot set read deadline"})
+		return nil
+	})
 
 	for {
 		_, message, err := c.ws.ReadMessage()
@@ -75,9 +75,7 @@ func (c *connection) write(mt int, payload []byte) error {
 
 	err := c.ws.SetWriteDeadline(time.Now().Add(writeWait))
 
-	util.LogErrorF(err, log.Fields{
-		"error": "Cannot set write deadline",
-	})
+	util.LogErrorF(err, log.Fields{"error": "Cannot set write deadline"})
 
 	return c.ws.WriteMessage(mt, payload)
 }
@@ -89,7 +87,6 @@ func (c *connection) writePump() {
 	defer func() {
 		ticker.Stop()
 		_ = c.ws.Close()
-		//util.LogError(c.ws.Close())
 	}()
 
 	for {
@@ -102,16 +99,12 @@ func (c *connection) writePump() {
 				return
 			}
 			if err := c.write(websocket.TextMessage, message); err != nil {
-				util.LogErrorF(err, log.Fields{
-					"error": "Cannot send text message",
-				})
+				util.LogErrorF(err, log.Fields{"error": "Cannot send text message"})
 				return
 			}
 		case <-ticker.C:
 			if err := c.write(websocket.PingMessage, []byte{}); err != nil {
-				util.LogErrorF(err, log.Fields{
-					"error": "Cannot send ping message",
-				})
+				util.LogErrorF(err, log.Fields{"error": "Cannot send ping message"})
 				return
 			}
 		}

@@ -722,8 +722,6 @@ definitions:
       task_id:
         type: integer
         example: 23
-      task:
-        type: string
       time:
         type: string
         format: date-time
