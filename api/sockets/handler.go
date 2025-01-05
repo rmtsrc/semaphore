@@ -22,10 +22,10 @@ var upgrader = websocket.Upgrader{
 
 const (
 	// Time allowed to write a message to the peer.
-	writeWait = 10 * time.Second
+	writeWait = 2 * 10 * time.Second
 
 	// Time allowed to read the next pong message from the peer.
-	pongWait = 60 * time.Second
+	pongWait = 2 * 60 * time.Second
 
 	// Send pings to peer with this period. Must be less than pongWait.
 	pingPeriod = (pongWait * 9) / 10
@@ -45,15 +45,15 @@ func (c *connection) readPump() {
 	defer func() {
 		h.unregister <- c
 		_ = c.ws.Close()
-		//util.LogErrorWithFields(c.ws.Close(), log.Fields{"error": "Error closing websocket"})
+		//util.LogErrorF(c.ws.Close(), log.Fields{"error": "Error closing websocket"})
 	}()
 
 	c.ws.SetReadLimit(maxMessageSize)
 
-	//util.LogErrorWithFields(c.ws.SetReadDeadline(time.Now().Add(pongWait)), log.Fields{"error": "Socket state corrupt"})
+	//util.LogErrorF(c.ws.SetReadDeadline(time.Now().Add(pongWait)), log.Fields{"error": "Socket state corrupt"})
 	//
 	//c.ws.SetPongHandler(func(string) error {
-	//	util.LogErrorWithFields(c.ws.SetReadDeadline(time.Now().Add(pongWait)), log.Fields{"error": "Socket state corrupt"})
+	//	util.LogErrorF(c.ws.SetReadDeadline(time.Now().Add(pongWait)), log.Fields{"error": "Socket state corrupt"})
 	//	return nil
 	//})
 
