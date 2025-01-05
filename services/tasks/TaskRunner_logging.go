@@ -138,32 +138,27 @@ func (t *TaskRunner) panicOnError(err error, msg string) {
 
 func (t *TaskRunner) logPipe(reader io.Reader) {
 	t.logWG.Add(1)
-	defer t.logWG.Done()
+
+	linesCh := make(chan string, 100000)
+
+	go func() {
+		defer t.logWG.Done()
+
+		for line := range linesCh {
+			t.Log(line)
+		}
+	}()
 
 	scanner := bufio.NewScanner(reader)
 
 	for scanner.Scan() {
 		line := scanner.Text()
-		fmt.Println(line)
-		t.Log(line)
+		linesCh <- line
 	}
+
+	close(linesCh)
 
 	if scanner.Err() != nil && scanner.Err().Error() != "EOF" {
-		//don't panic on these errors, sometimes it throws not dangerous "read |0: file already closed" error
 		util.LogWarningF(scanner.Err(), log.Fields{"error": "Failed to read TaskRunner output"})
 	}
-}
-
-// Readln reads from the pipe
-func Readln(r *bufio.Reader) (string, error) {
-	var (
-		isPrefix = true
-		err      error
-		line, ln []byte
-	)
-	for isPrefix && err == nil {
-		line, isPrefix, err = r.ReadLine()
-		ln = append(ln, line...)
-	}
-	return string(ln), err
 }
