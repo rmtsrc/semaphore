@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os/exec"
 	"time"
 
@@ -54,8 +55,12 @@ func (t *TaskRunner) LogCmd(cmd *exec.Cmd) {
 	stderr, _ := cmd.StderrPipe()
 	stdout, _ := cmd.StdoutPipe()
 
-	go t.logPipe(bufio.NewReader(stderr))
-	go t.logPipe(bufio.NewReader(stdout))
+	go t.logPipe(stderr)
+	go t.logPipe(stdout)
+}
+
+func (t *TaskRunner) WaitLog() {
+	t.logWG.Wait()
 }
 
 func (t *TaskRunner) SetCommit(hash, message string) {
@@ -131,17 +136,21 @@ func (t *TaskRunner) panicOnError(err error, msg string) {
 	}
 }
 
-func (t *TaskRunner) logPipe(reader *bufio.Reader) {
-	line, err := Readln(reader)
+func (t *TaskRunner) logPipe(reader io.Reader) {
+	t.logWG.Add(1)
+	defer t.logWG.Done()
 
-	for err == nil {
+	scanner := bufio.NewScanner(reader)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		fmt.Println(line)
 		t.Log(line)
-		line, err = Readln(reader)
 	}
 
-	if err.Error() != "EOF" {
+	if scanner.Err() != nil && scanner.Err().Error() != "EOF" {
 		//don't panic on these errors, sometimes it throws not dangerous "read |0: file already closed" error
-		util.LogWarningF(err, log.Fields{"error": "Failed to read TaskRunner output"})
+		util.LogWarningF(scanner.Err(), log.Fields{"error": "Failed to read TaskRunner output"})
 	}
 }
 

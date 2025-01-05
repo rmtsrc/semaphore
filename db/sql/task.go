@@ -109,7 +109,7 @@ func (d *SqlDb) UpdateTask(task db.Task) error {
 
 func (d *SqlDb) CreateTaskOutput(output db.TaskOutput) (db.TaskOutput, error) {
 	_, err := d.exec(
-		"insert into task__output (task_id, task, output, time) VALUES (?, '', ?, ?)",
+		"insert into task__output (task_id, output, time) VALUES (?, ?, ?)",
 		output.TaskID,
 		output.Output,
 		output.Time.UTC())
