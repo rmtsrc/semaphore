@@ -1,0 +1,1 @@
+alter table `task__output` change `id` `id` bigint not null
