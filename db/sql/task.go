@@ -222,7 +222,7 @@ func (d *SqlDb) GetTaskOutputs(projectID int, taskID int) (output []db.TaskOutpu
 	}
 
 	_, err = d.selectAll(&output,
-		"select task_id, task, time, output from task__output where task_id=? order by id",
+		"select task_id, time, output from task__output where task_id=? order by id",
 		taskID)
 	return
 }
