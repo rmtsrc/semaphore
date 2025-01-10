@@ -381,31 +381,18 @@ func (t *LocalJob) getPlaybookArgs(username string, incomingVersion *string) (ar
 		args = append(args, "--extra-vars", fmt.Sprintf("%s=%s", secret.Name, secret.Secret))
 	}
 
-	var templateExtraArgs []string
-	if t.Template.Arguments != nil {
-		err = json.Unmarshal([]byte(*t.Template.Arguments), &templateExtraArgs)
-		if err != nil {
-			t.Log("Invalid format of the template extra arguments, must be valid JSON")
-			return
-		}
-	}
-
-	var taskExtraArgs []string
-	if t.Template.AllowOverrideArgsInTask && t.Task.Arguments != nil {
-		err = json.Unmarshal([]byte(*t.Task.Arguments), &taskExtraArgs)
-		if err != nil {
-			t.Log("Invalid format of the TaskRunner extra arguments, must be valid JSON")
-			return
-		}
+	cliArgs, err := t.getCLIArgs()
+	if err != nil {
+		t.Log(err.Error())
+		return
 	}
 
 	if t.Task.Limit != "" {
 		t.Log("--limit=" + t.Task.Limit)
-		taskExtraArgs = append(taskExtraArgs, "--limit="+t.Task.Limit)
+		cliArgs = append(cliArgs, "--limit="+t.Task.Limit)
 	}
 
-	args = append(args, templateExtraArgs...)
-	args = append(args, taskExtraArgs...)
+	args = append(args, cliArgs...)
 	args = append(args, playbookName)
 
 	if line, ok := inputMap[db.AccessKeyRoleAnsibleUser]; ok {
@@ -416,6 +403,32 @@ func (t *LocalJob) getPlaybookArgs(username string, incomingVersion *string) (ar
 		inputs["BECOME password"] = line
 	}
 
+	return
+}
+
+func (t *LocalJob) getCLIArgs() (args []string, err error) {
+
+	var templateExtraArgs []string
+	if t.Template.Arguments != nil {
+		err = json.Unmarshal([]byte(*t.Template.Arguments), &templateExtraArgs)
+		if err != nil {
+			err = fmt.Errorf("invalid format of the template extra arguments, must be valid JSON")
+			return
+		}
+	}
+
+	args = append(args, templateExtraArgs...)
+
+	var taskExtraArgs []string
+	if t.Template.AllowOverrideArgsInTask && t.Task.Arguments != nil {
+		err = json.Unmarshal([]byte(*t.Task.Arguments), &taskExtraArgs)
+		if err != nil {
+			err = fmt.Errorf("invalid format of the TaskRunner extra arguments, must be valid JSON")
+			return
+		}
+	}
+
+	args = append(args, taskExtraArgs...)
 	return
 }
 
