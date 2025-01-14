@@ -73,13 +73,13 @@
       justify-center
       class="pa-0"
     >
-      <v-card class="px-5 py-3" style="margin-bottom: 10%;">
+      <v-card class="px-5 py-5" style="margin-bottom: 10%; border-radius: 15px;">
         <v-card-text>
           <v-form
             ref="signInForm"
             lazy-validation
             v-model="signInFormValid"
-            style="width: 300px;"
+            style="width: 350px;"
           >
 
             <v-img
@@ -91,7 +91,7 @@
               class="mb-4"
             />
 
-            <h2 class="text-center pt-6 pb-4">
+            <h2 class="text-center pt-4 pb-6">
               {{ verification ? 'Two-step verification' : 'Log in to your account' }}
             </h2>
 
@@ -144,23 +144,27 @@
               ></v-text-field>
 
               <v-btn
+                large
                 color="primary"
                 @click="signIn"
                 :disabled="signInProcess"
                 block
                 v-if="loginWithPassword"
+                rounded
               >
                 {{ $t('signIn') }}
               </v-btn>
 
               <v-btn
+                large
                 v-for="provider in oidcProviders"
                 :color="provider.color || 'secondary'"
                 dark
-                class="mt-2"
+                class="mt-3"
                 @click="oidcSignIn(provider.id)"
                 block
                 :key="provider.id"
+                rounded
               >
                 <v-icon
                   left
