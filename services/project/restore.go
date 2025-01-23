@@ -271,19 +271,20 @@ func (e BackupTemplate) Restore(store db.Store, b *BackupDB) error {
 
 	if e.Vaults != nil {
 		for _, vault := range e.Vaults {
-			var VaultKeyID int
-			if vault.VaultKeyID != nil {
+			var VaultKeyID *int
+
+			if vault.VaultKey != nil {
 				if k := findEntityByName[db.AccessKey](vault.VaultKey, b.keys); k == nil {
 					return fmt.Errorf("vaults[].vaultKey does not exist in keys[].name")
 				} else {
-					VaultKeyID = k.ID
+					VaultKeyID = &k.ID
 				}
 			}
 
 			tplVault := vault.TemplateVault
 			tplVault.ProjectID = b.meta.ID
 			tplVault.TemplateID = newTemplate.ID
-			tplVault.VaultKeyID = &VaultKeyID
+			tplVault.VaultKeyID = VaultKeyID
 
 			_, err := store.CreateTemplateVault(tplVault)
 			if err != nil {
