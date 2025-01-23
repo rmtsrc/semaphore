@@ -62,6 +62,29 @@ func (e BackupView) Restore(store db.Store, b *BackupDB) error {
 	return nil
 }
 
+func (e BackupSchedule) Verify(backup *BackupFormat) error {
+	return verifyDuplicate[BackupSchedule](e.Name, backup.Schedules)
+}
+
+func (e BackupSchedule) Restore(store db.Store, b *BackupDB) error {
+	v := e.Schedule
+	v.ProjectID = b.meta.ID
+
+	tpl := findEntityByName[db.Template](&e.Template, b.templates)
+	if tpl == nil {
+		return fmt.Errorf("template does not exist in templates[].name")
+	}
+	v.TemplateID = tpl.ID
+
+	newView, err := store.CreateSchedule(v)
+	if err != nil {
+		return err
+	}
+
+	b.schedules = append(b.schedules, newView)
+	return nil
+}
+
 func (e BackupAccessKey) Verify(backup *BackupFormat) error {
 	return verifyDuplicate[BackupAccessKey](e.Name, backup.Keys)
 }
@@ -355,6 +378,11 @@ func (backup *BackupFormat) Verify() error {
 			return fmt.Errorf("error at views[%d]: %s", i, err.Error())
 		}
 	}
+	for i, o := range backup.Schedules {
+		if err := o.Verify(backup); err != nil {
+			return fmt.Errorf("error at templates[%d]: %s", i, err.Error())
+		}
+	}
 	for i, o := range backup.Keys {
 		if err := o.Verify(backup); err != nil {
 			return fmt.Errorf("error at keys[%d]: %s", i, err.Error())
@@ -375,6 +403,7 @@ func (backup *BackupFormat) Verify() error {
 			return fmt.Errorf("error at templates[%d]: %s", i, err.Error())
 		}
 	}
+
 	return nil
 }
 
@@ -458,6 +487,12 @@ func (backup *BackupFormat) Restore(user db.User, store db.Store) (*db.Project, 
 			ProjectID: b.meta.ID,
 		}
 		_, _ = store.CreateIntegrationAlias(alias)
+	}
+
+	for i, o := range backup.Schedules {
+		if err := o.Restore(store, &b); err != nil {
+			return nil, fmt.Errorf("error at schedules[%d]: %s", i, err.Error())
+		}
 	}
 
 	return &newProject, nil
