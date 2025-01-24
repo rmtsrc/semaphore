@@ -60,17 +60,21 @@
           ></v-text-field>
 
           <v-row>
-            <v-col>
+            <v-col cols="6">
               <v-checkbox
+                dense
+                hide-details
+                v-model="item.alert"
+                :label="$t('sendAlerts')"
+              ></v-checkbox>
+            </v-col>
+            <v-col cols="6">
+              <v-checkbox
+                dense
+                hide-details
                 v-model="item.admin"
                 :label="$t('adminUser')"
                 v-if="isAdmin"
-              ></v-checkbox>
-            </v-col>
-            <v-col>
-              <v-checkbox
-                v-model="item.alert"
-                :label="$t('sendAlerts')"
               ></v-checkbox>
             </v-col>
           </v-row>
