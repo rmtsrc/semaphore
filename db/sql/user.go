@@ -215,6 +215,15 @@ func (d *SqlDb) GetUser(userID int) (user db.User, err error) {
 	return
 }
 
+func (d *SqlDb) GetProUserCount() (count int, err error) {
+
+	cnt, err := d.sql.SelectInt(d.PrepareQuery("select count(*) from `user` where pro"))
+
+	count = int(cnt)
+
+	return
+}
+
 func (d *SqlDb) GetUserCount() (count int, err error) {
 
 	cnt, err := d.sql.SelectInt(d.PrepareQuery("select count(*) from `user`"))
