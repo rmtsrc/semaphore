@@ -106,6 +106,12 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !editor.Admin && (user.Pro && !targetUser.Pro) {
+		log.Warn(editor.Username + " is not permitted to mark users as Pro")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	if !editor.Admin && editor.ID != targetUser.ID {
 		log.Warn(editor.Username + " is not permitted to edit users")
 		w.WriteHeader(http.StatusUnauthorized)
