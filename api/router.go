@@ -511,11 +511,19 @@ func getSystemInfo(w http.ResponseWriter, r *http.Request) {
 		host = util.WebHostURL.String()
 	}
 
+	authMethods := make([]string, 0)
+
+	if util.Config.Auth.Totp.Enabled {
+		authMethods = append(authMethods, "totp")
+	}
+
 	body := map[string]interface{}{
 		"version":           util.Version(),
 		"ansible":           util.AnsibleVersion(),
 		"web_host":          host,
 		"use_remote_runner": util.Config.UseRemoteRunner,
+
+		"auth_methods": authMethods,
 
 		"premium_features": map[string]bool{
 			"project_runners":   false,

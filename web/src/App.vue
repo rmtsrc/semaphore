@@ -66,6 +66,7 @@
           :need-save="needSave"
           :need-reset="needReset"
           :is-admin="user.admin"
+          :auth-methods="systemInfo.auth_methods"
           @hide-action-buttons="hideUserDialogButtons = true"
           @show-action-buttons="hideUserDialogButtons = false"
         />
