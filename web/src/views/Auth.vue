@@ -73,115 +73,125 @@
       justify-center
       class="pa-0"
     >
-      <v-form
-        ref="signInForm"
-        lazy-validation
-        v-model="signInFormValid"
-        style="width: 300px;"
-      >
-
-        <v-img
-          width="80"
-          height="80"
-          transition="0"
-          src="favicon.png"
-          style="margin: auto;"
-          class="mb-4"
-        />
-
-        <h3 class="text-center mb-8">{{ $t('semaphore') }}</h3>
-
-        <h3 v-if="verification" class="text-center mb-3 mt-0">Two-step verification</h3>
-
-        <v-alert
-          :value="signInError != null"
-          color="error"
-          style="margin-bottom: 20px;"
-        >{{ signInError }}
-        </v-alert>
-
-        <div v-if="verification">
-
-          <div class="text-center mb-2">
-            Open the two-step verification app on your mobile device to get your verification code.
-          </div>
-          <v-otp-input
-            v-model="verificationCode"
-            length="6"
-            @finish="verify()"
-          ></v-otp-input>
-
-          <v-divider class="my-6" />
-
-          <div class="text-center">
-            <a @click="signOut()">{{ $t('Return to login') }}</a>
-          </div>
-        </div>
-
-        <div v-else>
-          <v-text-field
-            v-model="username"
-            v-bind:label='$t("username")'
-            :rules="[v => !!v || $t('username_required')]"
-            required
-            :disabled="signInProcess"
-            v-if="loginWithPassword"
-          ></v-text-field>
-
-          <v-text-field
-            v-model="password"
-            :label="$t('password')"
-            :rules="[v => !!v || $t('password_required')]"
-            type="password"
-            required
-            :disabled="signInProcess"
-            @keyup.enter.native="signIn"
-            style="margin-bottom: 20px;"
-            v-if="loginWithPassword"
-          ></v-text-field>
-
-          <v-btn
-            color="primary"
-            @click="signIn"
-            :disabled="signInProcess"
-            block
-            v-if="loginWithPassword"
+      <v-card class="px-5 py-5" style="margin-bottom: 10%; border-radius: 15px;">
+        <v-card-text>
+          <v-form
+            ref="signInForm"
+            lazy-validation
+            v-model="signInFormValid"
+            style="width: 350px;"
           >
-            {{ $t('signIn') }}
-          </v-btn>
 
-          <v-btn
-            v-for="provider in oidcProviders"
-            :color="provider.color || 'secondary'"
-            dark
-            class="mt-2"
-            @click="oidcSignIn(provider.id)"
-            block
-            :key="provider.id"
-          >
-            <v-icon
-              left
-              dark
-              v-if="provider.icon"
-            >
-              mdi-{{ provider.icon }}
-            </v-icon>
+            <v-img
+              width="80"
+              height="80"
+              transition="0"
+              src="favicon.png"
+              style="margin: auto;"
+              class="mb-4"
+            />
 
-            {{ provider.name }}
-          </v-btn>
+            <h2 class="text-center pt-4 pb-6">
+              {{ verification ? 'Two-step verification' : 'Log in to your account' }}
+            </h2>
 
-          <div class="text-center mt-6" v-if="loginWithPassword">
-            <a @click="loginHelpDialog = true">{{ $t('dontHaveAccountOrCantSignIn') }}</a>
-          </div>
+            <v-alert
+              :value="signInError != null"
+              color="error"
+              style="margin-bottom: 20px;"
+            >{{ signInError }}
+            </v-alert>
 
-        </div>
+            <div v-if="verification">
+
+              <div class="text-center mb-2">
+                Open the two-step verification app on your mobile device to
+                get your verification code.
+              </div>
+              <v-otp-input
+                v-model="verificationCode"
+                length="6"
+                @finish="verify()"
+              ></v-otp-input>
+
+              <v-divider class="my-6" />
+
+              <div class="text-center">
+                <a @click="signOut()">{{ $t('Return to login') }}</a>
+              </div>
+            </div>
+
+            <div v-else>
+              <v-text-field
+                v-model="username"
+                v-bind:label='$t("username")'
+                :rules="[v => !!v || $t('username_required')]"
+                required
+                :disabled="signInProcess"
+                v-if="loginWithPassword"
+              ></v-text-field>
+
+              <v-text-field
+                v-model="password"
+                :label="$t('password')"
+                :rules="[v => !!v || $t('password_required')]"
+                type="password"
+                required
+                :disabled="signInProcess"
+                @keyup.enter.native="signIn"
+                style="margin-bottom: 20px;"
+                v-if="loginWithPassword"
+              ></v-text-field>
+
+              <v-btn
+                large
+                color="primary"
+                @click="signIn"
+                :disabled="signInProcess"
+                block
+                v-if="loginWithPassword"
+                rounded
+              >
+                {{ $t('signIn') }}
+              </v-btn>
+
+              <v-btn
+                large
+                v-for="provider in oidcProviders"
+                :color="provider.color || 'secondary'"
+                dark
+                class="mt-3"
+                @click="oidcSignIn(provider.id)"
+                block
+                :key="provider.id"
+                rounded
+              >
+                <v-icon
+                  left
+                  dark
+                  v-if="provider.icon"
+                >
+                  mdi-{{ provider.icon }}
+                </v-icon>
+
+                {{ provider.name }}
+              </v-btn>
+
+              <div class="text-center mt-6" v-if="loginWithPassword">
+                <a @click="loginHelpDialog = true">{{ $t('dontHaveAccountOrCantSignIn') }}</a>
+              </div>
+
+            </div>
       </v-form>
+        </v-card-text>
+      </v-card>
     </v-container>
   </div>
 </template>
 <style lang="scss">
 .auth {
   height: 100vh;
+  background: #80808024;
 }
 </style>
 <script>
@@ -342,7 +352,13 @@ export default {
     },
 
     async oidcSignIn(provider) {
-      document.location = `${document.baseURI}api/auth/oidc/${provider}/login`;
+      let query = '';
+
+      if (this.$route.query.new_project === 'premium') {
+        query = '?redirect=/project/premium';
+      }
+
+      document.location = `${document.baseURI}api/auth/oidc/${provider}/login${query}`;
     },
   },
 };

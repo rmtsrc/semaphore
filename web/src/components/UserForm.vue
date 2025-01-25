@@ -2,7 +2,12 @@
   <div>
     <v-tabs v-model="tab">
       <v-tab key="settings">Settings</v-tab>
-      <v-tab key="2fa">2FA</v-tab>
+      <v-tab
+        key="2fa"
+        v-if="authMethods.includes('totp')"
+      >
+        2FA
+      </v-tab>
     </v-tabs>
 
     <v-divider class="mb-6" style="margin-top: -1px;" />
@@ -60,32 +65,39 @@
           ></v-text-field>
 
           <v-row>
-            <v-col>
+            <v-col cols="6">
               <v-checkbox
+                dense
+                hide-details
+                v-model="item.alert"
+                :label="$t('sendAlerts')"
+              ></v-checkbox>
+            </v-col>
+            <v-col cols="6">
+              <v-checkbox
+                dense
+                hide-details
                 v-model="item.admin"
                 :label="$t('adminUser')"
                 v-if="isAdmin"
               ></v-checkbox>
             </v-col>
-            <v-col>
-              <v-checkbox
-                v-model="item.alert"
-                :label="$t('sendAlerts')"
-              ></v-checkbox>
-            </v-col>
           </v-row>
         </v-form>
       </v-tab-item>
+
       <v-tab-item key="2fa" class="pb-4">
-        <v-switch
-          class="mt-0"
-          v-model="totpEnabled"
-          label="Time-based one-time password"
-        ></v-switch>
-        <img
-          v-if="totpQrUrl"
-          :src="totpQrUrl"
-          style="
+        <div v-if="authMethods.includes('totp')">
+          <v-switch
+            class="mt-0"
+            v-model="totpEnabled"
+            label="Time-based one-time password"
+          ></v-switch>
+
+          <img
+            v-if="totpQrUrl"
+            :src="totpQrUrl"
+            style="
         width: 100%;
         aspect-ratio: 1;
         border-radius: 4px;
@@ -94,8 +106,9 @@
         border: 10px solid white;
         background-color: white;
       "
-          alt="QR code"
-        />
+            alt="QR code"
+          />
+        </div>
       </v-tab-item>
     </v-tabs-items>
   </div>
@@ -107,6 +120,7 @@ import axios from 'axios';
 export default {
   props: {
     isAdmin: Boolean,
+    authMethods: Array,
   },
 
   mixins: [ItemFormBase],

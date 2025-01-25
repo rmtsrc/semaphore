@@ -106,6 +106,12 @@ func updateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !editor.Admin && (user.Pro && !targetUser.Pro) {
+		log.Warn(editor.Username + " is not permitted to mark users as Pro")
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
 	if !editor.Admin && editor.ID != targetUser.ID {
 		log.Warn(editor.Username + " is not permitted to edit users")
 		w.WriteHeader(http.StatusUnauthorized)
@@ -219,6 +225,12 @@ func totpQr(w http.ResponseWriter, r *http.Request) {
 
 func enableTotp(w http.ResponseWriter, r *http.Request) {
 	user := context.Get(r, "_user").(db.User)
+
+	if !util.Config.Auth.Totp.Enabled {
+		helpers.WriteErrorStatus(w, "TOTP not enabled", http.StatusBadRequest)
+		return
+	}
+
 	if user.Totp != nil {
 		helpers.WriteErrorStatus(w, "TOTP already enabled", http.StatusBadRequest)
 		return

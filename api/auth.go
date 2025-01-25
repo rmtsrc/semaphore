@@ -135,6 +135,11 @@ func verifySession(w http.ResponseWriter, r *http.Request) {
 
 	switch session.VerificationMethod {
 	case db.SessionVerificationTotp:
+		if !util.Config.Auth.Totp.Enabled {
+			helpers.WriteErrorStatus(w, "TOTP_DISABLED", http.StatusForbidden)
+			return
+		}
+
 		var body totpRequestBody
 		if !helpers.Bind(w, r, &body) {
 			w.WriteHeader(http.StatusBadRequest)

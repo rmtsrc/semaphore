@@ -66,6 +66,7 @@
           :need-save="needSave"
           :need-reset="needReset"
           :is-admin="user.admin"
+          :auth-methods="systemInfo.auth_methods"
           @hide-action-buttons="hideUserDialogButtons = true"
           @show-action-buttons="hideUserDialogButtons = false"
         />
@@ -243,9 +244,7 @@
             <v-list-item-title>{{ $t('newProject2') }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-      </v-list>
 
-      <v-list class="pt-0" v-if="!project">
         <v-list-item key="new_project" :to="`/project/restore`">
           <v-list-item-icon>
             <v-icon>mdi-restore</v-icon>

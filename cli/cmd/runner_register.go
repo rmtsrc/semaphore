@@ -32,7 +32,7 @@ func registerRunner() {
 			panic("Empty token")
 		}
 
-		util.Config.Runner.Token = string(tokenBytes)
+		util.Config.Runner.RegistrationToken = string(tokenBytes)
 	}
 
 	taskPool := runners.JobPool{}
