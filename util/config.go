@@ -123,7 +123,8 @@ type TLSConfig struct {
 }
 
 type TotpConfig struct {
-	Enabled bool `json:"enabled" env:"SEMAPHORE_TOTP_ENABLED"`
+	Enabled      bool `json:"enabled" env:"SEMAPHORE_TOTP_ENABLED"`
+	RecoveryCode bool `json:"recovery_code" env:"SEMAPHORE_TOTP_RECOVERY_CODE"`
 }
 
 type AuthConfig struct {
