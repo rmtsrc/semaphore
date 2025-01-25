@@ -153,12 +153,13 @@ func createSession(w http.ResponseWriter, r *http.Request, user db.User) {
 	var verificationMethod db.SessionVerificationMethod
 	verified := false
 	switch {
-	case user.Totp != nil:
+	case user.Totp != nil && util.Config.Auth.Totp.Enabled:
 		verificationMethod = db.SessionVerificationTotp
 	default:
 		verificationMethod = db.SessionVerificationNone
 		verified = true
 	}
+
 	newSession, err := helpers.Store(r).CreateSession(db.Session{
 		UserID:             user.ID,
 		Created:            time.Now(),
@@ -171,7 +172,9 @@ func createSession(w http.ResponseWriter, r *http.Request, user db.User) {
 	})
 
 	if err != nil {
-		panic(err)
+		log.Error(err)
+		helpers.WriteErrorStatus(w, "Failed to create session", http.StatusInternalServerError)
+		return
 	}
 
 	encoded, err := util.Cookie.Encode("semaphore", map[string]interface{}{

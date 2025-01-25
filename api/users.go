@@ -225,6 +225,12 @@ func totpQr(w http.ResponseWriter, r *http.Request) {
 
 func enableTotp(w http.ResponseWriter, r *http.Request) {
 	user := context.Get(r, "_user").(db.User)
+
+	if !util.Config.Auth.Totp.Enabled {
+		helpers.WriteErrorStatus(w, "TOTP not enabled", http.StatusBadRequest)
+		return
+	}
+
 	if user.Totp != nil {
 		helpers.WriteErrorStatus(w, "TOTP already enabled", http.StatusBadRequest)
 		return

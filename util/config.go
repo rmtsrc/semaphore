@@ -119,6 +119,14 @@ type TLSConfig struct {
 	HTTPRedirectPort *int   `json:"http_redirect_port,omitempty" env:"SEMAPHORE_TLS_HTTP_REDIRECT_PORT"`
 }
 
+type TotpConfig struct {
+	Enabled bool `json:"enabled" env:"SEMAPHORE_TOTP_ENABLED"`
+}
+
+type AuthConfig struct {
+	Totp *TotpConfig `json:"totp,omitempty"`
+}
+
 // ConfigType mapping between Config and the json file that sets it
 type ConfigType struct {
 	MySQL    *DbConfig `json:"mysql,omitempty"`
@@ -131,6 +139,8 @@ type ConfigType struct {
 	// if : is missing it will be corrected
 	Port string     `json:"port,omitempty" default:":3000" rule:"^:?([0-9]{1,5})$" env:"SEMAPHORE_PORT"`
 	TLS  *TLSConfig `json:"tls,omitempty"`
+
+	Auth *AuthConfig `json:"auth,omitempty"`
 
 	// Interface ip, put in front of the port.
 	// defaults to empty
