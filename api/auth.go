@@ -105,7 +105,7 @@ func recoverySession(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if !util.VerifyRecoveryCode(body.RecoveryCode, user.Totp.RecoveryCode) {
+		if !util.VerifyRecoveryCode(body.RecoveryCode, user.Totp.RecoveryHash) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -121,6 +121,8 @@ func recoverySession(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+
+		w.WriteHeader(http.StatusNoContent)
 	case db.SessionVerificationNone:
 		w.WriteHeader(http.StatusNoContent)
 		return

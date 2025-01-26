@@ -302,6 +302,9 @@ export default {
             recovery_code: this.recoveryCode,
           },
         });
+
+        const { location } = document;
+        document.location = location;
       } catch (e) {
         this.signInError = getErrorMessage(e);
       } finally {
