@@ -91,8 +91,16 @@
               class="mb-4"
             />
 
-            <h2 class="text-center pt-4 pb-6">
-              {{ verification ? 'Two-step verification' : 'Log in to your account' }}
+            <h2 v-if="screen === 'verification'" class="text-center pt-4 pb-6">
+              Two-step verification
+            </h2>
+
+            <h2 v-else-if="screen === 'recovery'" class="text-center pt-4 pb-6">
+              Account recovery
+            </h2>
+
+            <h2 v-else class="text-center pt-4 pb-6">
+              Log in to your account
             </h2>
 
             <v-alert
@@ -102,12 +110,12 @@
             >{{ signInError }}
             </v-alert>
 
-            <div v-if="verification">
-
-              <div class="text-center mb-2">
+            <div v-if="screen === 'verification'">
+              <div class="text-center mb-4">
                 Open the two-step verification app on your mobile device to
                 get your verification code.
               </div>
+
               <v-otp-input
                 v-model="verificationCode"
                 length="6"
@@ -117,8 +125,41 @@
               <v-divider class="my-6" />
 
               <div class="text-center">
-                <a @click="signOut()">{{ $t('Return to login') }}</a>
+                <a @click="signOut()" class="mr-6">{{ $t('Return to login') }}</a>
+                <a @click="screen = 'recovery'">
+                  {{ $t('Use recovery code') }}
+                </a>
               </div>
+            </div>
+
+            <div v-else-if="screen === 'recovery'">
+              <div class="text-center mb-2">
+                Use your recovery code to regain access to your account.
+              </div>
+
+              <v-text-field
+                class="mt-6"
+                outlined
+                v-model="recoveryCode"
+                :label="$t('Recovery code')"
+                :rules="[v => !!v || $t('recoveryCode_required')]"
+                required
+              />
+
+              <div>
+                <v-btn
+                  style="width: 100%;"
+                  color="primary"
+                  @click="recovery()"
+                >
+                  Send
+                </v-btn>
+              </div>
+
+              <div class="text-center pt-6">
+                <a @click="screen = 'verification'">{{ $t('Return to verification') }}</a>
+              </div>
+
             </div>
 
             <div v-else>
@@ -213,9 +254,12 @@ export default {
       oidcProviders: [],
       loginWithPassword: null,
 
-      verification: null,
+      screen: null,
+
       verificationCode: null,
       verificationMethod: null,
+
+      recoveryCode: null,
     };
   },
 
@@ -237,7 +281,7 @@ export default {
         });
         break;
       case 'unverified':
-        this.verification = true;
+        this.screen = 'verification';
         this.verificationMethod = verificationMethod;
         break;
       default:
@@ -246,6 +290,25 @@ export default {
   },
 
   methods: {
+    async recovery() {
+      this.signInProcess = true;
+
+      try {
+        await axios({
+          method: 'post',
+          url: '/api/auth/recovery',
+          responseType: 'json',
+          data: {
+            recovery_code: this.recoveryCode,
+          },
+        });
+      } catch (e) {
+        this.signInError = getErrorMessage(e);
+      } finally {
+        this.signInProcess = false;
+      }
+    },
+
     async signOut() {
       (await axios({
         method: 'post',
