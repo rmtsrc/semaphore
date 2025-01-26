@@ -81,7 +81,7 @@ func recoverySession(w http.ResponseWriter, r *http.Request) {
 
 	switch session.VerificationMethod {
 	case db.SessionVerificationTotp:
-		if !util.Config.Auth.Totp.Enabled || !util.Config.Auth.Totp.RecoveryCode {
+		if !util.Config.Auth.Totp.Enabled || !util.Config.Auth.Totp.AllowRecovery {
 			helpers.WriteErrorStatus(w, "TOTP_DISABLED", http.StatusForbidden)
 			return
 		}

@@ -26,7 +26,7 @@ type UserTotp struct {
 	UserID       int       `db:"user_id" json:"user_id"`
 	URL          string    `db:"url" json:"url"`
 	RecoveryHash string    `db:"recovery_hash" json:"-"`
-	RecoveryCode string    `db:"-" json:"recovery_code"`
+	RecoveryCode string    `db:"-" json:"recovery_code,omitempty"`
 }
 
 type UserWithProjectRole struct {

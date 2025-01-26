@@ -10,9 +10,9 @@
       </v-tab>
     </v-tabs>
 
-    <v-divider class="mb-6" style="margin-top: -1px;" />
+    <v-divider class="mb-6" style="margin-top: -1px;"/>
 
-    <v-tabs-items v-model="tab">
+    <v-tabs-items v-model="tab" style="overflow: unset;">
       <v-tab-item key="settings">
         <v-form
           ref="form"
@@ -24,7 +24,8 @@
             :value="formError"
             color="error"
             class="pb-2"
-          >{{ formError }}</v-alert>
+          >{{ formError }}
+          </v-alert>
 
           <v-text-field
             v-model="item.name"
@@ -86,8 +87,10 @@
         </v-form>
       </v-tab-item>
 
-      <v-tab-item key="2fa" class="pb-4">
-        <div v-if="authMethods.includes('totp')">
+      <v-tab-item key="2fa" class="pb-4" v-if="item != null">
+        <div
+          v-if="authMethods.includes('totp')"
+        >
           <v-switch
             class="mt-0"
             v-model="totpEnabled"
@@ -108,6 +111,26 @@
       "
             alt="QR code"
           />
+
+          <div
+            v-if="item.totp && item.totp.recovery_code"
+            class="mt-4"
+            style="position: relative;"
+          >
+            <div class="">Recovery code</div>
+            <div>
+              <code>{{ item.totp.recovery_code }}</code>
+              <v-btn
+                style="position: absolute; right: -4px; top: 2px;"
+                icon
+                large
+                color="white"
+                @click="copyToClipboard(item.totp.recovery_code)"
+              >
+                <v-icon>mdi-content-copy</v-icon>
+              </v-btn>
+            </div>
+          </div>
         </div>
       </v-tab-item>
     </v-tabs-items>
@@ -116,6 +139,7 @@
 <script>
 import ItemFormBase from '@/components/ItemFormBase';
 import axios from 'axios';
+import EventBus from '@/event-bus';
 
 export default {
   props: {
@@ -173,6 +197,21 @@ export default {
       } else {
         this.totpEnabled = true;
         this.totpQrUrl = `/api/users/${this.itemId}/2fas/totp/${this.item.totp.id}/qr`;
+      }
+    },
+
+    async copyToClipboard(text) {
+      try {
+        await window.navigator.clipboard.writeText(text);
+        EventBus.$emit('i-snackbar', {
+          color: 'success',
+          text: 'The recovery code has been copied to your clipboard.',
+        });
+      } catch (e) {
+        EventBus.$emit('i-snackbar', {
+          color: 'error',
+          text: `Can't copy the recovery code: ${e.message}`,
+        });
       }
     },
 

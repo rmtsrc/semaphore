@@ -83,7 +83,7 @@ func Route() *mux.Router {
 
 	publicAPIRouter.HandleFunc("/auth/login", login).Methods("GET", "POST")
 	publicAPIRouter.HandleFunc("/auth/verify", verifySession).Methods("POST")
-	publicAPIRouter.HandleFunc("/auth/recovery", verifySession).Methods("POST")
+	publicAPIRouter.HandleFunc("/auth/recovery", recoverySession).Methods("POST")
 
 	publicAPIRouter.HandleFunc("/auth/logout", logout).Methods("POST")
 	publicAPIRouter.HandleFunc("/auth/oidc/{provider}/login", oidcLogin).Methods("GET")
