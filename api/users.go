@@ -246,13 +246,17 @@ func enableTotp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	code, hash, err := util.GenerateRecoveryCode()
-	if err != nil {
-		helpers.WriteError(w, err)
-		return
+	var code, hash string
+
+	if util.Config.Auth.Totp.AllowRecovery {
+		code, hash, err = util.GenerateRecoveryCode()
+		if err != nil {
+			helpers.WriteError(w, err)
+			return
+		}
 	}
 
-	newTotp, err := helpers.Store(r).AddTotpVerification(user.ID, key.URL(), string(hash))
+	newTotp, err := helpers.Store(r).AddTotpVerification(user.ID, key.URL(), hash)
 	if err != nil {
 		helpers.WriteError(w, err)
 		return
