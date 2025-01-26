@@ -230,7 +230,7 @@ func (d *BoltDb) GetAllAdmins() (users []db.User, err error) {
 	return
 }
 
-func (d *BoltDb) AddTotpVerification(userID int, url string) (totp db.UserTotp, err error) {
+func (d *BoltDb) AddTotpVerification(userID int, url string, recoveryHash string) (totp db.UserTotp, err error) {
 
 	current := make([]db.UserTotp, 0)
 	err = d.getObjects(userID, db.UserTotpProps, db.RetrieveQueryParams{}, nil, current)
@@ -242,6 +242,7 @@ func (d *BoltDb) AddTotpVerification(userID int, url string) (totp db.UserTotp, 
 
 	totp.UserID = userID
 	totp.URL = url
+	totp.RecoveryHash = recoveryHash
 	totp.Created = db.GetParsedTime(time.Now().UTC())
 
 	newTotp, err := d.createObject(userID, db.UserTotpProps, totp)

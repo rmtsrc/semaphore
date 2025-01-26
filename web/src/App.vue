@@ -66,7 +66,7 @@
           :need-save="needSave"
           :need-reset="needReset"
           :is-admin="user.admin"
-          :auth-methods="systemInfo.auth_methods"
+          :auth-methods="(systemInfo || {auth_methods: {}}).auth_methods"
           @hide-action-buttons="hideUserDialogButtons = true"
           @show-action-buttons="hideUserDialogButtons = false"
         />
@@ -245,7 +245,7 @@
           </v-list-item-content>
         </v-list-item>
 
-        <v-list-item key="new_project" :to="`/project/restore`">
+        <v-list-item key="restore_project" :to="`/project/restore`">
           <v-list-item-icon>
             <v-icon>mdi-restore</v-icon>
           </v-list-item-icon>
@@ -532,6 +532,7 @@
         :webHost="(systemInfo || {}).web_host"
         :version="(systemInfo || {version: ''}).version.split('-')[0]"
         :premiumFeatures="((systemInfo || {premium_features: {}}).premium_features)"
+        :authMethods="(systemInfo || {auth_methods: {}}).auth_methods"
         :user="user"
       ></router-view>
     </v-main>

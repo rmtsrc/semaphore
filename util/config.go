@@ -2,10 +2,13 @@ package util
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base32"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"io"
 	"net/url"
 	"os"
@@ -120,7 +123,8 @@ type TLSConfig struct {
 }
 
 type TotpConfig struct {
-	Enabled bool `json:"enabled" env:"SEMAPHORE_TOTP_ENABLED"`
+	Enabled       bool `json:"enabled" env:"SEMAPHORE_TOTP_ENABLED"`
+	AllowRecovery bool `json:"allow_recovery" env:"SEMAPHORE_TOTP_ALLOW_RECOVERY"`
 }
 
 type AuthConfig struct {
@@ -906,4 +910,28 @@ func GetPublicAliasURL(scope string, alias string) string {
 	aliasURL += "api/" + scope + "/" + alias
 
 	return aliasURL
+}
+
+func GenerateRecoveryCode() (code string, hash string, err error) {
+
+	buf := make([]byte, 10)
+	_, err = io.ReadFull(rand.Reader, buf)
+	if err != nil {
+		return
+	}
+
+	code = base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(buf)
+
+	hashBytes, err := bcrypt.GenerateFromPassword([]byte(code), bcrypt.DefaultCost)
+	if err != nil {
+		return
+	}
+
+	hash = string(hashBytes)
+	return
+}
+
+func VerifyRecoveryCode(inputCode, storedHash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(storedHash), []byte(inputCode))
+	return err == nil
 }
