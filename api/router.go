@@ -512,10 +512,12 @@ func getSystemInfo(w http.ResponseWriter, r *http.Request) {
 		host = util.WebHostURL.String()
 	}
 
-	authMethods := make([]string, 0)
+	var authMethods LoginAuthMethods
 
 	if util.Config.Auth.Totp.Enabled {
-		authMethods = append(authMethods, "totp")
+		authMethods.Totp = &LoginTotpAuthMethod{
+			AllowRecovery: util.Config.Auth.Totp.AllowRecovery,
+		}
 	}
 
 	body := map[string]interface{}{

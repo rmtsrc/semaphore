@@ -4,7 +4,7 @@
       <v-tab key="settings">Settings</v-tab>
       <v-tab
         key="2fa"
-        v-if="authMethods.includes('totp')"
+        v-if="authMethods.totp"
       >
         2FA
       </v-tab>
@@ -89,7 +89,7 @@
 
       <v-tab-item key="2fa" class="pb-4" v-if="item != null">
         <div
-          v-if="authMethods.includes('totp')"
+          v-if="authMethods.totp"
         >
           <v-switch
             class="mt-0"
@@ -113,7 +113,7 @@
           />
 
           <div
-            v-if="item.totp && item.totp.recovery_code"
+            v-if="authMethods.totp.allow_recovery && item.totp && item.totp.recovery_code"
             class="mt-4"
             style="position: relative;"
           >
@@ -144,7 +144,7 @@ import EventBus from '@/event-bus';
 export default {
   props: {
     isAdmin: Boolean,
-    authMethods: Array,
+    authMethods: Object,
   },
 
   mixins: [ItemFormBase],

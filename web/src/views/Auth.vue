@@ -126,7 +126,10 @@
 
               <div class="text-center">
                 <a @click="signOut()" class="mr-6">{{ $t('Return to login') }}</a>
-                <a @click="screen = 'recovery'">
+                <a
+                  v-if="authMethods.totp && authMethods.totp.allow_recovery"
+                  @click="screen = 'recovery'"
+                >
                   {{ $t('Use recovery code') }}
                 </a>
               </div>
@@ -253,12 +256,12 @@ export default {
 
       oidcProviders: [],
       loginWithPassword: null,
+      authMethods: {},
 
       screen: null,
 
       verificationCode: null,
       verificationMethod: null,
-
       recoveryCode: null,
     };
   },
@@ -271,18 +274,12 @@ export default {
         document.location = document.baseURI + window.location.search;
         break;
       case 'unauthenticated':
-        await axios({
-          method: 'get',
-          url: '/api/auth/login',
-          responseType: 'json',
-        }).then((resp) => {
-          this.oidcProviders = resp.data.oidc_providers;
-          this.loginWithPassword = resp.data.login_with_password;
-        });
+        await this.loadLoginData();
         break;
       case 'unverified':
         this.screen = 'verification';
         this.verificationMethod = verificationMethod;
+        await this.loadLoginData();
         break;
       default:
         throw new Error(`Unknown authentication status: ${status}`);
@@ -290,6 +287,18 @@ export default {
   },
 
   methods: {
+    async loadLoginData() {
+      await axios({
+        method: 'get',
+        url: '/api/auth/login',
+        responseType: 'json',
+      }).then((resp) => {
+        this.oidcProviders = resp.data.oidc_providers;
+        this.loginWithPassword = resp.data.login_with_password;
+        this.authMethods = resp.data.auth_methods;
+      });
+    },
+
     async recovery() {
       this.signInProcess = true;
 
