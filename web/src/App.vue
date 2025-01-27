@@ -1122,6 +1122,10 @@ export default {
           EventBus.$emit('i-show-task', { taskId });
         }
       }
+
+      if (this.projects.length > 0 && this.$route.query.new_project != null) {
+        EventBus.$emit('i-new-project', { projectType: this.$route.query.new_project });
+      }
     },
 
     async trySelectMostSuitableProject() {
