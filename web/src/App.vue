@@ -382,7 +382,7 @@
                   v-on="on"
                 >
                   <img
-                    style="border-radius: 30px;"
+                    style="border-radius: 30px; max-width: 100%;"
                     :src="`flags/${lang.flag}.svg`"
                     alt=""
                   />
@@ -398,7 +398,7 @@
 
                   <v-list-item-icon>
                     <v-img
-                      style="border-radius: 20px;"
+                      style="border-radius: 20px; max-width: 24px;"
                       :src="`flags/${lang.flag}.svg`"
                       alt=""
                     />
