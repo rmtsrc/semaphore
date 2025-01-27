@@ -386,15 +386,25 @@
 
             <v-spacer/>
 
-            <v-menu top min-width="150" max-width="235" nudge-top="12" :position-x="50" absolute>
+            <v-menu
+              top
+              min-width="150"
+              max-width="235"
+              nudge-top="12"
+              :position-x="50"
+              absolute
+            >
               <template v-slot:activator="{on, attrs}">
                 <v-btn
                   icon
-                  x-large
                   v-bind="attrs"
                   v-on="on"
                 >
-                  <span style="font-size: 30px;">{{ lang.flag }}</span>
+                  <img
+                    style="border-radius: 30px;"
+                    :src="`flags/${lang.flag}.svg`"
+                    alt=""
+                  />
                 </v-btn>
               </template>
 
@@ -406,7 +416,11 @@
                 >
 
                   <v-list-item-icon>
-                    {{ lang.flag }}
+                    <v-img
+                      style="border-radius: 20px;"
+                      :src="`flags/${lang.flag}.svg`"
+                      alt=""
+                    />
                   </v-list-item-icon>
 
                   <v-list-item-content>
@@ -747,62 +761,56 @@ const PROJECT_COLORS = [
 
 const LANGUAGES = {
   en: {
-    flag: '🇺🇸',
     title: 'English',
   },
   es: {
-    flag: '🇨🇱',
     title: 'Español',
   },
   ru: {
-    flag: '🇷🇺',
     title: 'Russian',
   },
   de: {
-    flag: '🇩🇪',
     title: 'German',
   },
   zh_cn: {
-    flag: '🇨🇳',
     title: '中文(大陆)',
   },
   zh_tw: {
-    flag: '🇹🇼',
     title: '中文(台灣)',
   },
   fr: {
-    flag: '🇫🇷',
     title: 'French',
   },
   it: {
-    flag: '🇮🇹',
     title: 'Italian',
   },
   pl: {
-    flag: '🇵🇱️',
     title: 'Polish',
   },
   pt: {
-    flag: '🇵🇹',
     title: 'Portuguese',
   },
   pt_br: {
-    flag: '🇧🇷',
     title: 'Português do Brasil',
   },
 };
 
 function getLangInfo(locale) {
-  let res = LANGUAGES[locale];
+  let lang = locale;
+  let res = LANGUAGES[lang];
 
   // failback short i18n
   if (!res) {
-    res = LANGUAGES[locale.split('_')[0]];
+    lang = lang.split('_')[0];
+    res = LANGUAGES[lang];
   }
 
   if (!res) {
-    res = LANGUAGES.en;
+    lang = 'en';
+    res = LANGUAGES[lang];
   }
+
+  res.flag = lang;
 
   return res;
 }
@@ -856,6 +864,7 @@ export default {
         },
         ...Object.keys(LANGUAGES).map((lang) => ({
           id: lang,
+          flag: lang,
           ...LANGUAGES[lang],
         })),
       ],
