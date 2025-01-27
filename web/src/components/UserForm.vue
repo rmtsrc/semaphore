@@ -24,7 +24,7 @@
       <v-tab key="settings">Settings</v-tab>
       <v-tab
         key="2fa"
-        v-if="authMethods.totp"
+        v-if="!isNew || authMethods.totp"
       >
         Security
       </v-tab>
@@ -109,13 +109,13 @@
 
       <v-tab-item key="2fa" class="pb-4" v-if="item != null">
 
-        <div>
+        <div v-if="!isNew">
           <div class="title mb-3">Password</div>
           <v-btn color="primary" @click="passwordDialog = true;">Change password</v-btn>
         </div>
 
         <div
-          class="pt-10"
+          :class="{'pt-10': !isNew}"
           v-if="authMethods.totp"
         >
           <div class="title mb-2">Two-factor authentication</div>
