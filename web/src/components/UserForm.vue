@@ -1,12 +1,32 @@
 <template>
   <div>
+
+    <EditDialog
+      v-model="passwordDialog"
+      save-button-text="Save"
+      :title="$t('changePassword')"
+      v-if="item"
+      event-name="i-user"
+    >
+      <template v-slot:form="{ onSave, onError, needSave, needReset }">
+        <ChangePasswordForm
+          :project-id="projectId"
+          :item-id="item.id"
+          @save="onSave"
+          @error="onError"
+          :need-save="needSave"
+          :need-reset="needReset"
+        />
+      </template>
+    </EditDialog>
+
     <v-tabs v-model="tab">
       <v-tab key="settings">Settings</v-tab>
       <v-tab
         key="2fa"
         v-if="authMethods.totp"
       >
-        2FA
+        Security
       </v-tab>
     </v-tabs>
 
@@ -57,6 +77,7 @@
           </v-text-field>
 
           <v-text-field
+            v-if="isNew"
             v-model="item.password"
             :label="$t('password')"
             type="password"
@@ -87,9 +108,18 @@
       </v-tab-item>
 
       <v-tab-item key="2fa" class="pb-4" v-if="item != null">
+
+        <div>
+          <div class="title mb-3">Password</div>
+          <v-btn color="primary" @click="passwordDialog = true;">Change password</v-btn>
+        </div>
+
         <div
+          class="pt-10"
           v-if="authMethods.totp"
         >
+          <div class="title mb-2">Two-factor authentication</div>
+
           <v-switch
             class="mt-0"
             v-model="totpEnabled"
@@ -113,14 +143,17 @@
 
           <div
             v-if="authMethods.totp.allow_recovery && item.totp && item.totp.recovery_code"
-            class="mt-4"
-            style="position: relative;"
+            class="mt-5 pb-3"
           >
-            <div class="">Recovery code</div>
-            <div>
-              <code>{{ item.totp.recovery_code }}</code>
+            <div class="subtitle-1 mb-2">Recovery code</div>
+            <div style="position: relative;">
+              <code
+                style="font-size: 18px; background-color: #e03755;"
+              >
+                {{ item.totp.recovery_code }}
+              </code>
               <v-btn
-                style="position: absolute; right: -4px; top: 2px;"
+                style="position: absolute; right: -4px; top: -12px;"
                 icon
                 large
                 color="white"
@@ -139,8 +172,11 @@
 import ItemFormBase from '@/components/ItemFormBase';
 import axios from 'axios';
 import EventBus from '@/event-bus';
+import EditDialog from '@/components/EditDialog.vue';
+import ChangePasswordForm from '@/components/ChangePasswordForm.vue';
 
 export default {
+  components: { ChangePasswordForm, EditDialog },
   props: {
     isAdmin: Boolean,
     authMethods: Object,
@@ -150,6 +186,7 @@ export default {
 
   data() {
     return {
+      passwordDialog: null,
       totpEnabled: false,
       totpQrUrl: null,
 

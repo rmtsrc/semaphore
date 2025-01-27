@@ -31,25 +31,6 @@
     </YesNoDialog>
 
     <EditDialog
-      v-model="passwordDialog"
-      save-button-text="Save"
-      :title="$t('changePassword')"
-      v-if="user"
-      event-name="i-user"
-    >
-      <template v-slot:form="{ onSave, onError, needSave, needReset }">
-        <ChangePasswordForm
-          :project-id="projectId"
-          :item-id="user.id"
-          @save="onSave"
-          @error="onError"
-          :need-save="needSave"
-          :need-reset="needReset"
-        />
-      </template>
-    </EditDialog>
-
-    <EditDialog
       v-model="userDialog"
       save-button-text="Save"
       :title="$t('editUser')"
@@ -746,7 +727,6 @@ import EditDialog from '@/components/EditDialog.vue';
 import TaskLogView from '@/components/TaskLogView.vue';
 import ProjectForm from '@/components/ProjectForm.vue';
 import UserForm from '@/components/UserForm.vue';
-import ChangePasswordForm from '@/components/ChangePasswordForm.vue';
 import EventBus from '@/event-bus';
 import socket from '@/socket';
 import RestoreProjectForm from '@/components/RestoreProjectForm.vue';
@@ -826,7 +806,6 @@ export default {
   components: {
     YesNoDialog,
     RestoreProjectForm,
-    ChangePasswordForm,
     UserForm,
     EditDialog,
     TaskLogView,
@@ -847,7 +826,6 @@ export default {
       newProjectType: '',
       userDialog: null,
       hideUserDialogButtons: false,
-      passwordDialog: null,
       restoreProjectDialog: null,
       restoreProjectResult: null,
       restoreProjectResultDialog: null,
