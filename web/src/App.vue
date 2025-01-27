@@ -1123,7 +1123,7 @@ export default {
         }
       }
 
-      if (this.projects.length > 0 && this.$route.query.new_project != null) {
+      if ((this.projects || []).length > 0 && this.$route.query.new_project != null) {
         EventBus.$emit('i-new-project', { projectType: this.$route.query.new_project });
       }
     },
