@@ -82,6 +82,14 @@
                 :label="$t('adminUser')"
               ></v-checkbox>
             </v-col>
+            <v-col cols="6" v-if="isAdmin">
+              <v-checkbox
+                dense
+                hide-details
+                v-model="item.pro"
+                :label="$t('Pro user')"
+              ></v-checkbox>
+            </v-col>
           </v-row>
         </v-form>
       </v-tab-item>

@@ -295,7 +295,7 @@ export default {
       }).then((resp) => {
         this.oidcProviders = resp.data.oidc_providers;
         this.loginWithPassword = resp.data.login_with_password;
-        this.authMethods = resp.data.auth_methods;
+        this.authMethods = resp.data.auth_methods || {};
       });
     },
 
