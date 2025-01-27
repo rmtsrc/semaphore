@@ -65,7 +65,7 @@
             :disabled="item.external || formSaving"
           ></v-text-field>
 
-          <v-row>
+          <v-row class="pb-5 pt-2">
             <v-col cols="6">
               <v-checkbox
                 dense
@@ -74,13 +74,12 @@
                 :label="$t('sendAlerts')"
               ></v-checkbox>
             </v-col>
-            <v-col cols="6">
+            <v-col cols="6" v-if="isAdmin">
               <v-checkbox
                 dense
                 hide-details
                 v-model="item.admin"
                 :label="$t('adminUser')"
-                v-if="isAdmin"
               ></v-checkbox>
             </v-col>
           </v-row>
