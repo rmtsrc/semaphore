@@ -191,6 +191,8 @@ func createDb() error {
 		return err
 	}
 
+	defer conn.Close()
+
 	_, err = conn.Exec("create database " + cfg.GetDbName())
 
 	if err != nil {
@@ -323,13 +325,19 @@ func (d *SqlDb) PermanentConnection() bool {
 	return true
 }
 
-func (d *SqlDb) Connect(token string) {
+func (d *SqlDb) Connect(_ string) {
 	sqlDb, err := connect()
 	if err != nil {
 		panic(err)
 	}
 
-	if err := sqlDb.Ping(); err != nil {
+	err = sqlDb.Ping()
+
+	if err != nil {
+		if err = sqlDb.Close(); err != nil {
+			log.Warn("Cannot close database connection: " + err.Error())
+		}
+
 		if err = createDb(); err != nil {
 			panic(err)
 		}
