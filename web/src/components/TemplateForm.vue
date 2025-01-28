@@ -210,11 +210,15 @@
         <TemplateVaults
           v-if="needField('vault')"
           :project-id="this.projectId"
-          :vaults="item.vaults"
+          :vaults="vaults"
           @change="setTemplateVaults"
         ></TemplateVaults>
 
-        <SurveyVars style="margin-top: -10px;" :vars="item.survey_vars" @change="setSurveyVars"/>
+        <SurveyVars
+          style="margin-top: -10px;"
+          :vars="surveyVars"
+          @change="setSurveyVars"
+        />
 
         <v-select
           v-model="item.view_id"
@@ -389,6 +393,19 @@ export default {
   },
 
   computed: {
+    surveyVars() {
+      if (!this.item.survey_vars) {
+        throw new Error();
+      }
+      return this.item.survey_vars;
+    },
+
+    vaults() {
+      if (!this.item.vaults) {
+        throw new Error();
+      }
+      return this.item.vaults;
+    },
 
     isLoaded() {
       if (this.isNew && this.sourceItemId == null) {
@@ -425,16 +442,16 @@ export default {
 
     async afterLoadData() {
       if (this.sourceItemId) {
-        this.item = (await axios({
+        const item = (await axios({
           url: `/api/project/${this.projectId}/templates/${this.sourceItemId}`,
           responseType: 'json',
         })).data;
 
-        this.item.id = null;
+        item.id = null;
 
-        if (this.item.vaults) {
-          for (let i = 0; i < this.item.vaults.length; i += 1) {
-            this.item.vaults[i].id = null;
+        if (item.vaults) {
+          for (let i = 0; i < item.vaults.length; i += 1) {
+            item.vaults[i].id = null;
           }
         }
 
@@ -448,6 +465,8 @@ export default {
           this.cronRepositoryId = sourceSchedule.repository_id;
           this.cronVisible = this.cronRepositoryId != null;
         }
+
+        this.item = item;
       }
 
       this.advancedOptions = this.item.arguments != null || this.item.allow_override_args_in_task;
