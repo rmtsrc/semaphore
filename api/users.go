@@ -193,6 +193,11 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 func totpQr(w http.ResponseWriter, r *http.Request) {
 	user := context.Get(r, "_user").(db.User)
 
+	if user.Totp == nil {
+		helpers.WriteErrorStatus(w, "TOTP not enabled", http.StatusNotFound)
+		return
+	}
+
 	key, err := otp.NewKeyFromURL(user.Totp.URL)
 	if err != nil {
 		helpers.WriteError(w, err)
@@ -212,12 +217,6 @@ func totpQr(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	pngBytes := buf.Bytes()
-
-	//pngBytes, err := qrcode.Encode(user.Totp.URL, qrcode.Medium, 256)
-	//if err != nil {
-	//	helpers.WriteError(w, err)
-	//	return
-	//}
 
 	w.Header().Add("Content-Type", "image/png")
 	_, err = w.Write(pngBytes)
