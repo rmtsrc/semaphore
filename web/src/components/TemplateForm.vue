@@ -203,19 +203,12 @@
           v-if="needField('environment')"
         ></v-select>
 
-        <TemplateVaults
-          v-if="itemTypeIndex === 0 && needField('vault')"
-          :project-id="this.projectId"
-          :vaults="item.vaults"
-          @change="setTemplateVaults"
-        ></TemplateVaults>
-
       </v-col>
 
       <v-col cols="12" md="6" class="pb-0">
 
         <TemplateVaults
-          v-if="itemTypeIndex > 0 && needField('vault')"
+          v-if="needField('vault')"
           :project-id="this.projectId"
           :vaults="item.vaults"
           @change="setTemplateVaults"
@@ -438,6 +431,12 @@ export default {
           responseType: 'json',
         })).data;
         this.item.id = null;
+        if (this.item.vaults) {
+          for (let i = 0; i < this.item.vaults.length; i += 1) {
+            this.item.vaults[i].id = null;
+          }
+        }
+        // TODO: update vault and scheduleW
       }
 
       this.advancedOptions = this.item.arguments != null || this.item.allow_override_args_in_task;
