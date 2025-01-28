@@ -31,25 +31,6 @@
     </YesNoDialog>
 
     <EditDialog
-      v-model="passwordDialog"
-      save-button-text="Save"
-      :title="$t('changePassword')"
-      v-if="user"
-      event-name="i-user"
-    >
-      <template v-slot:form="{ onSave, onError, needSave, needReset }">
-        <ChangePasswordForm
-          :project-id="projectId"
-          :item-id="user.id"
-          @save="onSave"
-          @error="onError"
-          :need-save="needSave"
-          :need-reset="needReset"
-        />
-      </template>
-    </EditDialog>
-
-    <EditDialog
       v-model="userDialog"
       save-button-text="Save"
       :title="$t('editUser')"
@@ -66,6 +47,7 @@
           :need-save="needSave"
           :need-reset="needReset"
           :is-admin="user.admin"
+          :auth-methods="(systemInfo || {auth_methods: {}}).auth_methods"
           @hide-action-buttons="hideUserDialogButtons = true"
           @show-action-buttons="hideUserDialogButtons = false"
         />
@@ -244,7 +226,7 @@
           </v-list-item-content>
         </v-list-item>
 
-        <v-list-item key="new_project" :to="`/project/restore`">
+        <v-list-item key="restore_project" :to="`/project/restore`">
           <v-list-item-icon>
             <v-icon>mdi-restore</v-icon>
           </v-list-item-icon>
@@ -385,15 +367,25 @@
 
             <v-spacer/>
 
-            <v-menu top min-width="150" max-width="235" nudge-top="12" :position-x="50" absolute>
+            <v-menu
+              top
+              min-width="150"
+              max-width="235"
+              nudge-top="12"
+              :position-x="50"
+              absolute
+            >
               <template v-slot:activator="{on, attrs}">
                 <v-btn
                   icon
-                  x-large
                   v-bind="attrs"
                   v-on="on"
                 >
-                  <span style="font-size: 30px;">{{ lang.flag }}</span>
+                  <img
+                    style="border-radius: 30px; max-width: 100%;"
+                    :src="`flags/${lang.flag}.svg`"
+                    alt=""
+                  />
                 </v-btn>
               </template>
 
@@ -405,7 +397,11 @@
                 >
 
                   <v-list-item-icon>
-                    {{ lang.flag }}
+                    <v-img
+                      style="border-radius: 20px; max-width: 24px;"
+                      :src="`flags/${lang.flag}.svg`"
+                      alt=""
+                    />
                   </v-list-item-icon>
 
                   <v-list-item-content>
@@ -531,6 +527,7 @@
         :webHost="(systemInfo || {}).web_host"
         :version="(systemInfo || {version: ''}).version.split('-')[0]"
         :premiumFeatures="((systemInfo || {premium_features: {}}).premium_features)"
+        :authMethods="(systemInfo || {auth_methods: {}}).auth_methods"
         :user="user"
       ></router-view>
     </v-main>
@@ -730,7 +727,6 @@ import EditDialog from '@/components/EditDialog.vue';
 import TaskLogView from '@/components/TaskLogView.vue';
 import ProjectForm from '@/components/ProjectForm.vue';
 import UserForm from '@/components/UserForm.vue';
-import ChangePasswordForm from '@/components/ChangePasswordForm.vue';
 import EventBus from '@/event-bus';
 import socket from '@/socket';
 import RestoreProjectForm from '@/components/RestoreProjectForm.vue';
@@ -745,62 +741,56 @@ const PROJECT_COLORS = [
 
 const LANGUAGES = {
   en: {
-    flag: '🇺🇸',
     title: 'English',
   },
   es: {
-    flag: '🇨🇱',
     title: 'Español',
   },
   ru: {
-    flag: '🇷🇺',
     title: 'Russian',
   },
   de: {
-    flag: '🇩🇪',
     title: 'German',
   },
   zh_cn: {
-    flag: '🇨🇳',
     title: '中文(大陆)',
   },
   zh_tw: {
-    flag: '🇹🇼',
     title: '中文(台灣)',
   },
   fr: {
-    flag: '🇫🇷',
     title: 'French',
   },
   it: {
-    flag: '🇮🇹',
     title: 'Italian',
   },
   pl: {
-    flag: '🇵🇱️',
     title: 'Polish',
   },
   pt: {
-    flag: '🇵🇹',
     title: 'Portuguese',
   },
   pt_br: {
-    flag: '🇧🇷',
     title: 'Português do Brasil',
   },
 };
 
 function getLangInfo(locale) {
-  let res = LANGUAGES[locale];
+  let lang = locale;
+  let res = LANGUAGES[lang];
 
   // failback short i18n
   if (!res) {
-    res = LANGUAGES[locale.split('_')[0]];
+    lang = lang.split('_')[0];
+    res = LANGUAGES[lang];
   }
 
   if (!res) {
-    res = LANGUAGES.en;
+    lang = 'en';
+    res = LANGUAGES[lang];
   }
+
+  res.flag = lang;
 
   return res;
 }
@@ -816,7 +806,6 @@ export default {
   components: {
     YesNoDialog,
     RestoreProjectForm,
-    ChangePasswordForm,
     UserForm,
     EditDialog,
     TaskLogView,
@@ -837,7 +826,6 @@ export default {
       newProjectType: '',
       userDialog: null,
       hideUserDialogButtons: false,
-      passwordDialog: null,
       restoreProjectDialog: null,
       restoreProjectResult: null,
       restoreProjectResultDialog: null,
@@ -854,6 +842,7 @@ export default {
         },
         ...Object.keys(LANGUAGES).map((lang) => ({
           id: lang,
+          flag: lang,
           ...LANGUAGES[lang],
         })),
       ],
@@ -1119,6 +1108,10 @@ export default {
         if (taskId) {
           EventBus.$emit('i-show-task', { taskId });
         }
+      }
+
+      if ((this.projects || []).length > 0 && this.$route.query.new_project != null) {
+        EventBus.$emit('i-new-project', { projectType: this.$route.query.new_project });
       }
     },
 

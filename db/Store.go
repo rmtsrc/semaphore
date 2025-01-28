@@ -265,6 +265,7 @@ type Store interface {
 	CreateAccessKey(accessKey AccessKey) (AccessKey, error)
 	DeleteAccessKey(projectID int, accessKeyID int) error
 
+	GetProUserCount() (int, error)
 	GetUserCount() (int, error)
 	GetUsers(params RetrieveQueryParams) ([]User, error)
 	CreateUserWithoutPassword(user User) (User, error)
@@ -275,7 +276,7 @@ type Store interface {
 	// Pwd should be present of you want update user password. Empty Pwd ignored.
 	UpdateUser(user UserWithPwd) error
 	SetUserPassword(userID int, password string) error
-	AddTotpVerification(userID int, url string) (UserTotp, error)
+	AddTotpVerification(userID int, url string, recoveryHash string) (UserTotp, error)
 	DeleteTotpVerification(userID int, totpID int) error
 
 	GetUser(userID int) (User, error)

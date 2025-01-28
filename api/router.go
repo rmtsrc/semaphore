@@ -83,6 +83,7 @@ func Route() *mux.Router {
 
 	publicAPIRouter.HandleFunc("/auth/login", login).Methods("GET", "POST")
 	publicAPIRouter.HandleFunc("/auth/verify", verifySession).Methods("POST")
+	publicAPIRouter.HandleFunc("/auth/recovery", recoverySession).Methods("POST")
 
 	publicAPIRouter.HandleFunc("/auth/logout", logout).Methods("POST")
 	publicAPIRouter.HandleFunc("/auth/oidc/{provider}/login", oidcLogin).Methods("GET")
@@ -511,11 +512,21 @@ func getSystemInfo(w http.ResponseWriter, r *http.Request) {
 		host = util.WebHostURL.String()
 	}
 
+	var authMethods LoginAuthMethods
+
+	if util.Config.Auth.Totp.Enabled {
+		authMethods.Totp = &LoginTotpAuthMethod{
+			AllowRecovery: util.Config.Auth.Totp.AllowRecovery,
+		}
+	}
+
 	body := map[string]interface{}{
 		"version":           util.Version(),
 		"ansible":           util.AnsibleVersion(),
 		"web_host":          host,
 		"use_remote_runner": util.Config.UseRemoteRunner,
+
+		"auth_methods": authMethods,
 
 		"premium_features": map[string]bool{
 			"project_runners":   false,
