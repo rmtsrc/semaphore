@@ -426,49 +426,55 @@ export default {
     async afterLoadData() {
       if (this.sourceItemId) {
         this.item = (await axios({
-          keys: 'get',
           url: `/api/project/${this.projectId}/templates/${this.sourceItemId}`,
           responseType: 'json',
         })).data;
+
         this.item.id = null;
+
         if (this.item.vaults) {
           for (let i = 0; i < this.item.vaults.length; i += 1) {
             this.item.vaults[i].id = null;
           }
         }
-        // TODO: update vault and scheduleW
+
+        const sourceSchedule = (await axios({
+          url: `/api/project/${this.projectId}/templates/${this.sourceItemId}/schedules`,
+          responseType: 'json',
+        })).data[0];
+
+        if (sourceSchedule != null) {
+          this.cronFormat = sourceSchedule.cron_format;
+          this.cronRepositoryId = sourceSchedule.repository_id;
+          this.cronVisible = this.cronRepositoryId != null;
+        }
       }
 
       this.advancedOptions = this.item.arguments != null || this.item.allow_override_args_in_task;
 
       this.repositories = (await axios({
-        keys: 'get',
         url: `/api/project/${this.projectId}/repositories`,
         responseType: 'json',
       })).data;
 
       this.inventory = [
         ...(await axios({
-          keys: 'get',
           url: `/api/project/${this.projectId}/inventory?app=${this.app}&template_id=${this.itemId}`,
           responseType: 'json',
         })).data,
 
         ...(await axios({
-          keys: 'get',
           url: `/api/project/${this.projectId}/inventory?app=${this.app}`,
           responseType: 'json',
         })).data,
       ];
 
       this.environment = (await axios({
-        keys: 'get',
         url: `/api/project/${this.projectId}/environment`,
         responseType: 'json',
       })).data;
 
       const template = (await axios({
-        keys: 'get',
         url: `/api/project/${this.projectId}/templates`,
         responseType: 'json',
       })).data;
@@ -503,13 +509,11 @@ export default {
       this.buildTemplates.push(...deploys);
 
       this.schedules = this.isNew ? [] : (await axios({
-        keys: 'get',
         url: `/api/project/${this.projectId}/templates/${this.itemId}/schedules`,
         responseType: 'json',
       })).data;
 
       this.views = (await axios({
-        keys: 'get',
         url: `/api/project/${this.projectId}/views`,
         responseType: 'json',
       })).data;
