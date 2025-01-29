@@ -401,7 +401,7 @@ export default {
     },
 
     vaults() {
-      if (!this.item.vaults === undefined) {
+      if (this.item.vaults === undefined) {
         throw new Error();
       }
       return this.item.vaults;
