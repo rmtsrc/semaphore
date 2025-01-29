@@ -394,14 +394,14 @@ export default {
 
   computed: {
     surveyVars() {
-      if (!this.item.survey_vars) {
+      if (this.item.survey_vars === undefined) {
         throw new Error();
       }
       return this.item.survey_vars;
     },
 
     vaults() {
-      if (!this.item.vaults) {
+      if (!this.item.vaults === undefined) {
         throw new Error();
       }
       return this.item.vaults;
