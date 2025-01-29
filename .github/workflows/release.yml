@@ -113,7 +113,7 @@ jobs:
           platforms: linux/amd64,linux/arm64 # ,linux/arm/v6
           push: ${{ github.event_name != 'pull_request' }}
           labels: ${{ steps.server.outputs.labels }}
-          tags: ${{ steps.server.outputs.tags }}-ansible2.16.5
+          tags: ${{ github.ref_name }}-ansible2.16.5
 
 
       - name: Runner meta
@@ -153,4 +153,4 @@ jobs:
           platforms: linux/amd64,linux/arm64 #,linux/arm/v6
           push: ${{ github.event_name != 'pull_request' }}
           labels: ${{ steps.runner.outputs.labels }}
-          tags: ${{ steps.runner.outputs.tags }}-ansible2.16.5
+          tags: ${{ github.ref_name }}-ansible2.16.5
