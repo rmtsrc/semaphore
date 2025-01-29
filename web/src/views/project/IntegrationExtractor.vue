@@ -1,6 +1,6 @@
 <template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
-  <div>
-    <IntegrationExtractorCrumb v-if="integration != null" :integration="integration"/>
+  <div v-if="integration != null">
+    <IntegrationExtractorCrumb :integration="integration"/>
 
     <div class="px-4 pt-3 pb-2">
       <v-switch

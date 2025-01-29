@@ -68,6 +68,15 @@ func ReceiveIntegration(w http.ResponseWriter, r *http.Request) {
 
 	projects := make(map[int]db.Project)
 
+	var payload []byte
+
+	payload, err = io.ReadAll(r.Body)
+
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
 	for _, integration := range integrations {
 
 		project, ok := projects[integration.ProjectID]
@@ -88,15 +97,6 @@ func ReceiveIntegration(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Error(err)
 			return
-		}
-
-		var payload []byte
-
-		payload, err = io.ReadAll(r.Body)
-
-		if err != nil {
-			log.Error(err)
-			continue
 		}
 
 		switch integration.AuthMethod {
@@ -134,11 +134,12 @@ func ReceiveIntegration(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		if level == db.IntegrationAliasSingle {
+		if level != db.IntegrationAliasSingle {
 			var matchers []db.IntegrationMatcher
 			matchers, err = store.GetIntegrationMatchers(integration.ProjectID, db.RetrieveQueryParams{}, integration.ID)
 			if err != nil {
 				log.Error(err)
+				continue
 			}
 
 			var matched = false

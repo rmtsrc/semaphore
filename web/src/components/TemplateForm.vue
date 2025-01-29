@@ -355,7 +355,7 @@ export default {
         lint: true,
         indentWithTabs: false,
       },
-      item: null,
+      item: {},
       inventory: null,
       repositories: null,
       environment: null,
@@ -394,14 +394,14 @@ export default {
 
   computed: {
     surveyVars() {
-      if (this.item.survey_vars === undefined) {
+      if (this.sourceItemId != null && this.item.survey_vars === undefined) {
         throw new Error();
       }
       return this.item.survey_vars;
     },
 
     vaults() {
-      if (this.item.vaults === undefined) {
+      if (this.sourceItemId != null && this.item.vaults === undefined) {
         throw new Error();
       }
       return this.item.vaults;
