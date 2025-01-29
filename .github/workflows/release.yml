@@ -101,7 +101,6 @@ jobs:
           labels: ${{ steps.server.outputs.labels }}
           tags: ${{ steps.server.outputs.tags }}
 
-
       - name: Server build with Ansible 2.16.5
         uses: docker/build-push-action@v5
         with:
@@ -113,8 +112,7 @@ jobs:
           platforms: linux/amd64,linux/arm64 # ,linux/arm/v6
           push: ${{ github.event_name != 'pull_request' }}
           labels: ${{ steps.server.outputs.labels }}
-          tags: type=raw,value=${{ github.ref_name }}-ansible2.16.5
-
+          tags: semaphoreui/semaphore:${{ github.ref_name }}-ansible2.16.5
 
       - name: Runner meta
         id: runner
@@ -131,7 +129,6 @@ jobs:
           flavor: |
             latest=true
 
-
       - name: Runner build
         uses: docker/build-push-action@v5
         with:
@@ -143,7 +140,6 @@ jobs:
           labels: ${{ steps.runner.outputs.labels }}
           tags: ${{ steps.runner.outputs.tags }}
 
-
       - name: Runner build with Ansible 2.16.5
         uses: docker/build-push-action@v5
         with:
@@ -153,4 +149,4 @@ jobs:
           platforms: linux/amd64,linux/arm64 #,linux/arm/v6
           push: ${{ github.event_name != 'pull_request' }}
           labels: ${{ steps.runner.outputs.labels }}
-          tags: type=raw,value=${{ github.ref_name }}-ansible2.16.5
+          tags: semaphoreui/runner:${{ github.ref_name }}-ansible2.16.5
