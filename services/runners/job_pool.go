@@ -289,6 +289,28 @@ func (p *JobPool) sendProgress() {
 	defer resp.Body.Close()
 }
 
+func (p *JobPool) getResponseErrorMessage(resp *http.Response) (res string) {
+	res = "the server returned error " + strconv.Itoa(resp.StatusCode)
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+
+	var errRes struct {
+		Error string `json:"error"`
+	}
+
+	err = json.Unmarshal(body, &errRes)
+	if err != nil {
+		return
+	}
+
+	res += ": " + errRes.Error
+
+	return
+}
+
 func (p *JobPool) tryRegisterRunner() bool {
 
 	logger := JobLogger{Context: "registration"}
@@ -329,13 +351,12 @@ func (p *JobPool) tryRegisterRunner() bool {
 	}
 
 	if resp.StatusCode != 200 {
-		logger.ActionError(fmt.Errorf("invalid status code"), "send request", "the server returned error "+strconv.Itoa(resp.StatusCode))
+		logger.ActionError(fmt.Errorf("invalid status code"), "send request", p.getResponseErrorMessage(resp))
 		return false
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-
 		logger.ActionError(err, "read response body", "can not read server's response body")
 		return false
 	}

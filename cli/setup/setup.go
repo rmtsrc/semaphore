@@ -34,10 +34,39 @@ func InteractiveRunnerSetup(conf *util.ConfigType) {
 
 	if haveToken {
 		token := ""
-		askValue("Runner token", "", &token)
+		for {
+			askValue("Runner token", "", &token)
 
-		// TODO: write token
+			if token == "" {
+				fmt.Println("Please provide a valid runner token")
+				continue
+			}
+			break
+		}
+
+		conf.Runner.Token = token
+	} else {
+		needRegistration := false
+		askConfirmation("Do you want to register runner on the server?", false, &needRegistration)
+		if needRegistration {
+			regToken := ""
+
+			for {
+				askValue("Enter runner registration token", "", &regToken)
+
+				if regToken == "" {
+					fmt.Println("Please provide a valid registration token")
+					continue
+				}
+
+				break
+			}
+
+			conf.Runner.RegistrationToken = regToken
+		}
 	}
+
+	return
 }
 
 func InteractiveSetup(conf *util.ConfigType) {
