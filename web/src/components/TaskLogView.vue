@@ -149,7 +149,7 @@ $task-log-message-height: 48px;
 .v-dialog--fullscreen {
 
   .task-log-records {
-    height: calc(100vh - $task-log-header-height);
+    height: calc(100vh - #{$task-log-header-height});
   }
 
   .task-log-view--with-message .task-log-records {
