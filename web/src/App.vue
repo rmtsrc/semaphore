@@ -980,6 +980,8 @@ import TaskLogDialog from '@/components/TaskLogDialog.vue';
 import SystemInfoDialog from '@/components/SystemInfoDialog.vue';
 import delay from '@/lib/delay';
 
+const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
+
 const PROJECT_COLORS = ['red', 'blue', 'orange', 'green'];
 
 const LANGUAGES = {
@@ -1155,8 +1157,10 @@ export default {
       // Native scrollbars (and other browser-drawn chrome) follow the theme;
       // otherwise a light scrollbar track shows up on dark pages.
       document.documentElement.style.colorScheme = val ? 'dark' : 'light';
-      if (val) {
+      if (val && !prefersDarkMode.matches) {
         localStorage.setItem('darkMode', '1');
+      } else if (!val && prefersDarkMode.matches) {
+        localStorage.setItem('darkMode', '0');
       } else {
         localStorage.removeItem('darkMode');
       }
@@ -1325,8 +1329,17 @@ export default {
   },
 
   async created() {
-    if (localStorage.getItem('darkMode') === '1') {
-      this.darkMode = true;
+    const isDarkMode = localStorage.getItem('darkMode');
+    if (isDarkMode !== null) {
+      this.darkMode = isDarkMode === '1';
+    } else {
+      prefersDarkMode.addEventListener('change', (e) => {
+        this.darkMode = e.matches;
+      });
+
+      if (prefersDarkMode.matches && localStorage.getItem('darkMode') !== '0') {
+        this.darkMode = true;
+      }
     }
 
     try {
