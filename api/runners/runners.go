@@ -1,14 +1,19 @@
 package runners
 
 import (
-	"net/http"
-
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/json"
+	"encoding/pem"
+	"fmt"
 	"github.com/gorilla/context"
 	"github.com/semaphoreui/semaphore/api/helpers"
 	"github.com/semaphoreui/semaphore/db"
 	"github.com/semaphoreui/semaphore/pkg/task_logger"
 	"github.com/semaphoreui/semaphore/services/runners"
 	"github.com/semaphoreui/semaphore/util"
+	"net/http"
 )
 
 func RunnerMiddleware(next http.Handler) http.Handler {
@@ -44,6 +49,18 @@ func RunnerMiddleware(next http.Handler) http.Handler {
 		context.Set(r, "runner", runner)
 		next.ServeHTTP(w, r)
 	})
+}
+
+func loadPublicKey(keyData []byte) (*rsa.PublicKey, error) {
+	block, _ := pem.Decode(keyData)
+	if block == nil || block.Type != "PUBLIC KEY" {
+		return nil, fmt.Errorf("invalid public key")
+	}
+	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+	return pub.(*rsa.PublicKey), nil
 }
 
 func GetRunner(w http.ResponseWriter, r *http.Request) {
@@ -120,7 +137,38 @@ func GetRunner(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	helpers.WriteJSON(w, http.StatusOK, data)
+	if runner.PublicKey != nil {
+
+		publicKey, err := loadPublicKey([]byte(*runner.PublicKey))
+		if err != nil {
+			helpers.WriteError(w, err)
+			return
+		}
+
+		message, err := json.Marshal(data)
+		if err != nil {
+			helpers.WriteError(w, err)
+			return
+		}
+
+		encryptedBytes, err := rsa.EncryptPKCS1v15(rand.Reader, publicKey, message)
+		if err != nil {
+			helpers.WriteError(w, err)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/octet-stream")
+
+		_, err = w.Write(encryptedBytes)
+		if err != nil {
+			helpers.WriteError(w, err)
+			return
+		}
+
+	} else {
+		helpers.WriteJSON(w, http.StatusOK, data)
+	}
+
 }
 
 func UpdateRunner(w http.ResponseWriter, r *http.Request) {
