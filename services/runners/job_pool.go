@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
 	"io"
 	"net/http"
@@ -385,6 +387,18 @@ func (p *JobPool) tryRegisterRunner() bool {
 	return true
 }
 
+func loadPrivateKey(filename string) (*rsa.PrivateKey, error) {
+	keyData, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	block, _ := pem.Decode(keyData)
+	if block == nil || block.Type != "RSA PRIVATE KEY" {
+		return nil, fmt.Errorf("invalid private key")
+	}
+	return x509.ParsePKCS1PrivateKey(block.Bytes)
+}
+
 // checkNewJobs tries to find runner to queued jobs
 func (p *JobPool) checkNewJobs() {
 
@@ -429,10 +443,16 @@ func (p *JobPool) checkNewJobs() {
 		return
 	}
 
-	if util.Config.Runner.PrivateKey != "" {
-		var privateKey *rsa.PrivateKey
+	if util.Config.Runner.PrivateKeyFile != "" {
+		var pk *rsa.PrivateKey
 
-		body, err = rsa.DecryptPKCS1v15(rand.Reader, privateKey, body)
+		pk, err = loadPrivateKey(util.Config.Runner.PrivateKeyFile)
+		if err != nil {
+			logger.ActionError(err, "decrypt response body", "can not read private key")
+			return
+		}
+
+		body, err = rsa.DecryptPKCS1v15(rand.Reader, pk, body)
 		if err != nil {
 			logger.ActionError(err, "decrypt response body", "can not decrypt server's response body")
 			return
