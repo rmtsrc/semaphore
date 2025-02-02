@@ -2,6 +2,8 @@ package runners
 
 import (
 	"bytes"
+	"crypto/rand"
+	"crypto/rsa"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -425,6 +427,16 @@ func (p *JobPool) checkNewJobs() {
 	if err != nil {
 		logger.ActionError(err, "read response body", "can not read server's response body")
 		return
+	}
+
+	if util.Config.Runner.PrivateKey != "" {
+		var privateKey *rsa.PrivateKey
+
+		body, err = rsa.DecryptPKCS1v15(rand.Reader, privateKey, body)
+		if err != nil {
+			logger.ActionError(err, "decrypt response body", "can not decrypt server's response body")
+			return
+		}
 	}
 
 	var response RunnerState

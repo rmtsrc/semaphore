@@ -96,10 +96,10 @@ const (
 
 type RunnerConfig struct {
 	RegistrationToken string `json:"-" env:"SEMAPHORE_RUNNER_REGISTRATION_TOKEN"`
-
-	Token string `json:"-" env:"SEMAPHORE_RUNNER_TOKEN"`
-
-	TokenFile string `json:"token_file" env:"SEMAPHORE_RUNNER_TOKEN_FILE"`
+	Token             string `json:"-" env:"SEMAPHORE_RUNNER_TOKEN"`
+	TokenFile         string `json:"token_file,omitempty" env:"SEMAPHORE_RUNNER_TOKEN_FILE"`
+	PrivateKey        string `json:"-"`
+	PrivateKeyFile    string `json:"private_key_file,omitempty" env:"SEMAPHORE_RUNNER_PRIVATE_KEY_FILE"`
 
 	// OneOff indicates than runner runs only one job and exit. It is very useful for dynamic runners.
 	// How it works?
