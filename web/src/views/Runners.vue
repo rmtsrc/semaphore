@@ -98,7 +98,8 @@
 
           <v-tabs-items v-model="usageTab">
             <v-tab-item key="config">
-              <div style="position: relative;">
+              <div style="position: relative;" class="mt-3">
+                <div>Config file content:</div>
                 <pre style="overflow: auto;
                             background: gray;
                             color: white;
@@ -116,9 +117,21 @@
                   <v-icon>mdi-content-copy</v-icon>
                 </v-btn>
               </div>
+
+              <div class="mt-3">
+                <div>Launching the runner:</div>
+                <pre style="overflow: auto;
+                  background: gray;
+                  color: white;
+                  border-radius: 10px;
+                  margin-top: 5px;"
+                     class="pa-2"
+                >semaphore runner start --config ./config.runner.json</pre>
+              </div>
             </v-tab-item>
             <v-tab-item key="setup">
-              <div style="position: relative;">
+              <div style="position: relative;" class="mt-3">
+                <div>Config file creation:</div>
                 <pre style="overflow: auto;
                             background: gray;
                             color: white;
@@ -136,9 +149,21 @@
                   <v-icon>mdi-content-copy</v-icon>
                 </v-btn>
               </div>
+
+              <div class="mt-3">
+                <div>Launching the runner:</div>
+                <pre style="overflow: auto;
+                  background: gray;
+                  color: white;
+                  border-radius: 10px;
+                  margin-top: 5px;"
+                 class="pa-2"
+                >semaphore runner start --config /path/to/config/file</pre>
+              </div>
             </v-tab-item>
             <v-tab-item key="env">
-              <div style="position: relative;">
+              <div style="position: relative;" class="mt-3">
+                <div>Launching the runner:</div>
                 <pre style="overflow: auto;
                             background: gray;
                             color: white;
@@ -159,7 +184,8 @@
             </v-tab-item>
 
             <v-tab-item key="docker">
-              <div style="position: relative;">
+              <div style="position: relative;" class="mt-3">
+                <div>Launching the runner:</div>
                 <pre style="overflow: auto;
                             background: gray;
                             color: white;
@@ -315,8 +341,7 @@ export default {
     },
 
     runnerSetupCommand() {
-      return `
-cat << EOF >> /tmp/config.runner.stdin
+      return `cat << EOF >> /tmp/config.runner.stdin
 ${this.webHost}
 no
 yes
@@ -333,7 +358,7 @@ semaphore runner setup --config ./config.runner.json < /tmp/config.runner.stdin`
       return `SEMAPHORE_WEB_ROOT=${this.webHost} \\
 SEMAPHORE_RUNNER_TOKEN=${(this.newRunner || {}).token} \\
 SEMAPHORE_RUNNER_PRIVATE_KEY_FILE=/path/to/the/private/key \\
-semaphore runner --no-config`;
+semaphore runner start --no-config`;
     },
 
     runnerDockerCommand() {
