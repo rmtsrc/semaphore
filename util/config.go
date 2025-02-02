@@ -96,7 +96,7 @@ const (
 
 type RunnerConfig struct {
 	RegistrationToken string `json:"-" env:"SEMAPHORE_RUNNER_REGISTRATION_TOKEN"`
-	Token             string `json:"-" env:"SEMAPHORE_RUNNER_TOKEN"`
+	Token             string `json:"token,omitempty" env:"SEMAPHORE_RUNNER_TOKEN"`
 	TokenFile         string `json:"token_file,omitempty" env:"SEMAPHORE_RUNNER_TOKEN_FILE"`
 	PrivateKeyFile    string `json:"private_key_file,omitempty" env:"SEMAPHORE_RUNNER_PRIVATE_KEY_FILE"`
 
@@ -246,14 +246,14 @@ func (conf *ConfigType) ToJSON() ([]byte, error) {
 }
 
 // ConfigInit reads in cli flags, and switches actions appropriately on them
-func ConfigInit(configPath string, noConfigFile bool) {
+func ConfigInit(configPath string, noConfigFile bool) (usedConfigPath *string) {
 	fmt.Println("Loading config")
 
 	Config = NewConfigType()
 	Config.Apps = map[string]App{}
 
 	if !noConfigFile {
-		loadConfigFile(configPath)
+		return loadConfigFile(configPath)
 	}
 
 	loadConfigEnvironment()
@@ -281,9 +281,11 @@ func ConfigInit(configPath string, noConfigFile bool) {
 			Config.Runner.Token = strings.TrimSpace(string(runnerTokenBytes))
 		}
 	}
+
+	return nil
 }
 
-func loadConfigFile(configPath string) {
+func loadConfigFile(configPath string) (usedConfigPath *string) {
 	if configPath == "" {
 		configPath = os.Getenv("SEMAPHORE_CONFIG_PATH")
 	}
@@ -310,6 +312,7 @@ func loadConfigFile(configPath string) {
 				continue
 			}
 			decodeConfig(file)
+			usedConfigPath = &p
 			break
 		}
 		exitOnConfigFileError(err)
@@ -317,8 +320,11 @@ func loadConfigFile(configPath string) {
 		p := configPath
 		file, err := os.Open(p)
 		exitOnConfigFileError(err)
+		usedConfigPath = &p
 		decodeConfig(file)
 	}
+
+	return
 }
 
 func loadDefaultsToObject(obj interface{}) error {

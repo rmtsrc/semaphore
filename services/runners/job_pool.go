@@ -1,6 +1,7 @@
 package runners
 
 import (
+	"bufio"
 	"bytes"
 	"crypto/rand"
 	"crypto/rsa"
@@ -100,16 +101,18 @@ func (p *JobPool) hasRunningJobs() bool {
 	return false
 }
 
-func (p *JobPool) Register() (err error) {
+func (p *JobPool) Register(configFilePath *string) (err error) {
 
 	if util.Config.Runner.TokenFile == "" {
-		return fmt.Errorf("runner token file required")
+		err = fmt.Errorf("runner token file required")
+		return
 	}
 
-	ok := p.tryRegisterRunner()
+	ok := p.tryRegisterRunner(configFilePath)
 
 	if !ok {
-		return fmt.Errorf("runner registration failed")
+		err = fmt.Errorf("runner registration failed")
+		return
 	}
 
 	return
@@ -315,7 +318,7 @@ func (p *JobPool) getResponseErrorMessage(resp *http.Response) (res string) {
 	return
 }
 
-func (p *JobPool) tryRegisterRunner() bool {
+func (p *JobPool) tryRegisterRunner(configFilePath *string) (ok bool) {
 
 	logger := JobLogger{Context: "registration"}
 
@@ -323,7 +326,19 @@ func (p *JobPool) tryRegisterRunner() bool {
 
 	if util.Config.Runner.RegistrationToken == "" {
 		logger.ActionError(fmt.Errorf("registration token cannot be empty"), "read input", "can not retrieve registration token")
-		return false
+		return
+	}
+
+	var err error
+	publicKey := ""
+
+	if util.Config.Runner.PrivateKeyFile != "" {
+		publicKey, err = generatePrivateKey(util.Config.Runner.PrivateKeyFile)
+	}
+
+	if err != nil {
+		logger.ActionError(err, "read input", "can not generate private key file")
+		return
 	}
 
 	client := &http.Client{}
@@ -334,35 +349,36 @@ func (p *JobPool) tryRegisterRunner() bool {
 		RegistrationToken: util.Config.Runner.RegistrationToken,
 		Webhook:           util.Config.Runner.Webhook,
 		MaxParallelTasks:  util.Config.Runner.MaxParallelTasks,
+		PublicKey:         publicKey,
 	})
 
 	if err != nil {
 		logger.ActionError(err, "form request", "can not marshal json")
-		return false
+		return
 	}
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBytes))
 	if err != nil {
 		logger.ActionError(err, "create request", "can not create request to the server")
-		return false
+		return
 	}
 
 	resp, err := client.Do(req)
 
 	if err != nil {
 		logger.ActionError(err, "send request", "unexpected error")
-		return false
+		return
 	}
 
 	if resp.StatusCode != 200 {
 		logger.ActionError(fmt.Errorf("invalid status code"), "send request", p.getResponseErrorMessage(resp))
-		return false
+		return
 	}
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		logger.ActionError(err, "read response body", "can not read server's response body")
-		return false
+		return
 	}
 
 	var res struct {
@@ -372,23 +388,53 @@ func (p *JobPool) tryRegisterRunner() bool {
 	err = json.Unmarshal(body, &res)
 	if err != nil {
 		logger.ActionError(err, "parsing result json", "server's response has invalid format")
-		return false
+		return
 	}
 
-	err = os.WriteFile(util.Config.Runner.TokenFile, []byte(res.Token), 0644)
+	if util.Config.Runner.TokenFile != "" {
+		err = os.WriteFile(util.Config.Runner.TokenFile, []byte(res.Token), 0644)
+	} else {
+		if configFilePath == nil {
+			logger.ActionError(fmt.Errorf("config file path required"), "read input", "can not retrieve config file path")
+			return
+		}
 
-	if err != nil {
-		logger.ActionError(err, "store token", "can not store token to the file")
-		return false
+		var configFileBuffer []byte
+		configFileBuffer, err = os.ReadFile(*configFilePath)
+		if err != nil {
+			logger.ActionError(err, "read config file", "can not read config file")
+			return
+		}
+
+		config := util.ConfigType{}
+		err = json.Unmarshal(configFileBuffer, &config)
+		if err != nil {
+			logger.ActionError(err, "parse config file", "can not parse config file")
+			return
+		}
+
+		config.Runner.Token = res.Token
+		configFileBuffer, err = json.Marshal(config)
+		if err != nil {
+			logger.ActionError(err, "marshal config file", "can not marshal config file")
+			return
+		}
+
+		err = os.WriteFile(*configFilePath, configFileBuffer, 0644)
+		if err != nil {
+			logger.ActionError(err, "write config file", "can not write config file")
+			return
+		}
 	}
 
 	defer resp.Body.Close()
 
-	return true
+	ok = true
+	return
 }
 
-func loadPrivateKey(filename string) (*rsa.PrivateKey, error) {
-	keyData, err := os.ReadFile(filename)
+func loadPrivateKey(privateKeyFilePath string) (*rsa.PrivateKey, error) {
+	keyData, err := os.ReadFile(privateKeyFilePath)
 	if err != nil {
 		return nil, err
 	}
@@ -397,6 +443,48 @@ func loadPrivateKey(filename string) (*rsa.PrivateKey, error) {
 		return nil, fmt.Errorf("invalid private key")
 	}
 	return x509.ParsePKCS1PrivateKey(block.Bytes)
+}
+
+func generatePrivateKey(privateKeyFilePath string) (publicKey string, err error) {
+	// 1. Generate RSA Private Key (2048 bits)
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		return
+	}
+
+	// 2. Encode the private key to PKCS#1 ASN.1 PEM
+	privateKeyBytes := x509.MarshalPKCS1PrivateKey(privateKey)
+	privateKeyPem := &pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: privateKeyBytes,
+	}
+
+	// 3. Write private key to file
+	privateKeyFile, err := os.Create(privateKeyFilePath)
+	if err != nil {
+		return
+	}
+	defer privateKeyFile.Close()
+
+	if err = pem.Encode(privateKeyFile, privateKeyPem); err != nil {
+		return
+	}
+
+	publicKeyBytes := x509.MarshalPKCS1PublicKey(&privateKey.PublicKey)
+	publicKeyPem := &pem.Block{
+		Type:  "PUBLIC KEY",
+		Bytes: publicKeyBytes,
+	}
+
+	var b bytes.Buffer
+	publicKeyFile := bufio.NewWriter(&b)
+
+	if err = pem.Encode(publicKeyFile, publicKeyPem); err != nil {
+		return
+	}
+
+	publicKey = string(b.Bytes())
+	return
 }
 
 // checkNewJobs tries to find runner to queued jobs
@@ -548,12 +636,12 @@ func (p *JobPool) checkNewJobs() {
 		var vaults []db.TemplateVault
 		if taskRunner.job.Template.Vaults != nil {
 			for _, vault := range taskRunner.job.Template.Vaults {
-				vault := vault
-				if vault.VaultKeyID != nil {
-					key := response.AccessKeys[*vault.VaultKeyID]
-					vault.Vault = &key
+				vault2 := vault
+				if vault2.VaultKeyID != nil {
+					key := response.AccessKeys[*vault2.VaultKeyID]
+					vault2.Vault = &key
 				}
-				vaults = append(vaults, vault)
+				vaults = append(vaults, vault2)
 			}
 		}
 		taskRunner.job.Template.Vaults = vaults

@@ -2,10 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/semaphoreui/semaphore/services/runners"
-	"os"
-
 	"github.com/semaphoreui/semaphore/cli/setup"
+	"github.com/semaphoreui/semaphore/services/runners"
 	"github.com/semaphoreui/semaphore/util"
 	"github.com/spf13/cobra"
 )
@@ -27,20 +25,12 @@ func doRunnerSetup() int {
 	config := &util.ConfigType{}
 
 	setup.InteractiveRunnerSetup(config)
-
 	resultConfigPath := setup.SaveConfig(config, "config-runner.json", persistentFlags.configPath)
-
 	util.ConfigInit(resultConfigPath, false)
 
-	if config.Runner.Token != "" {
-		if err := os.WriteFile(config.Runner.TokenFile, []byte(config.Runner.Token), 0644); err != nil {
-			panic(err)
-		}
-	}
-
-	if config.Runner.RegistrationToken != "" {
+	if util.Config.Runner.RegistrationToken != "" {
 		taskPool := runners.JobPool{}
-		err := taskPool.Register()
+		err := taskPool.Register(&resultConfigPath)
 		if err != nil {
 			panic(err)
 		}

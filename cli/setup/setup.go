@@ -29,41 +29,58 @@ func InteractiveRunnerSetup(conf *util.ConfigType) {
 
 	askValue("Path to the file where runner token will be stored", "", &conf.Runner.TokenFile)
 
-	haveToken := false
-	askConfirmation("Do you have runner token?", false, &haveToken)
+	yes := false
+	askConfirmation("Do you have runner's token?", false, &yes)
 
-	if haveToken {
+	if yes {
 		token := ""
 		for {
-			askValue("Runner token", "", &token)
+			askValue("Enter valid runner token", "", &token)
 
 			if token == "" {
-				fmt.Println("Please provide a valid runner token")
+				fmt.Println("Invalid token")
 				continue
 			}
 			break
 		}
 
 		conf.Runner.Token = token
-	} else {
-		needRegistration := false
-		askConfirmation("Do you want to register runner on the server?", false, &needRegistration)
-		if needRegistration {
-			regToken := ""
 
-			for {
-				askValue("Enter runner registration token", "", &regToken)
+		pkFile := ""
+		askConfirmation("Do you have runner's private key file?", false, &yes)
+		for {
+			askValue("Enter path to the private key file", "", &pkFile)
 
-				if regToken == "" {
-					fmt.Println("Please provide a valid registration token")
-					continue
-				}
+			if pkFile == "" {
+				fmt.Println("Invalid private key file path")
+				continue
+			}
+			break
+		}
 
-				break
+		conf.Runner.PrivateKeyFile = pkFile
+
+		return
+	}
+
+	needRegistration := false
+	askConfirmation("Do you want to register new runner on the server?", false, &needRegistration)
+	if needRegistration {
+		regToken := ""
+
+		for {
+			askValue("Enter runner registration token", "", &regToken)
+
+			if regToken == "" {
+				fmt.Println("Invalid registration token")
+				continue
 			}
 
-			conf.Runner.RegistrationToken = regToken
+			break
 		}
+
+		conf.Runner.RegistrationToken = regToken
+		return
 	}
 
 	return
