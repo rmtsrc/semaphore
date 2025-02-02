@@ -17,5 +17,5 @@ type Runner struct {
 	Active           bool   `db:"active" json:"active"`
 	Name             string `db:"name" json:"name"`
 
-	PublicKey *string `db:"public_key" json:"public_key"`
+	PublicKey *string `db:"public_key" json:"-"`
 }

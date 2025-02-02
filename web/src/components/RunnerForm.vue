@@ -35,24 +35,6 @@
     ></v-text-field>
 
     <v-checkbox
-      v-if="isNew"
-      class="mb-2"
-      v-model="generatePublicKey"
-      :label="$t('Generate the private/public key')"
-      :disabled="formSaving"
-      hide-details
-    ></v-checkbox>
-
-    <v-textarea
-      outlined
-      class="pb-0 CodeEditor"
-      v-model="item.public_key"
-      :label="$t('Public Key')"
-      :disabled="formSaving || generatePublicKey"
-      auto-grow
-    ></v-textarea>
-
-    <v-checkbox
       class="mt-0"
       v-model="item.active"
       :label="$t('enabled')"
@@ -61,16 +43,6 @@
     ></v-checkbox>
   </v-form>
 </template>
-<style lang="scss">
-.CodeEditor textarea {
-  font-family: monospace;
-  font-size: 14px;
-  white-space: pre;
-  overflow-wrap: normal;
-  overflow-x: scroll;
-  line-height: 1.2;
-}
-</style>
 <script>
 import ItemFormBase from '@/components/ItemFormBase';
 
@@ -81,28 +53,14 @@ export default {
 
   mixins: [ItemFormBase],
 
-  data() {
-    return {
-      generatePublicKey: null,
-    };
-  },
-
   methods: {
     getItemsUrl() {
       return '/api/runners';
     },
 
-    beforeLoadData() {
-      this.generatePublicKey = this.isNew;
-    },
-
     beforeSave() {
       if (!this.item.max_parallel_tasks) {
         this.item.max_parallel_tasks = 0;
-      }
-
-      if (this.isNew && this.generatePublicKey) {
-        this.item.public_key = null;
       }
     },
 
