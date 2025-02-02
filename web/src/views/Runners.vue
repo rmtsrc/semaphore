@@ -39,7 +39,7 @@
       v-model="newRunnerTokenDialog"
       :save-button-text="null"
       :title="$t('newRunnerToken')"
-      cancel-button-text="OK"
+      hide-buttons
     >
       <template v-slot:form="{}">
         <div>
@@ -56,6 +56,33 @@
                 icon
                 color="white"
                 @click="copyToClipboard((newRunner || {}).token)"
+              >
+                <v-icon>mdi-content-copy</v-icon>
+              </v-btn>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <div>{{ $t('Private Key') }}</div>
+            <div style="position: relative;">
+              <code
+                class="px-2 py-3 mt-2"
+                style="background: gray; color: white; display: block; font-size: 14px;"
+              >{{ (newRunner || {private_key: ''}).private_key.substring(0, 90) + '...' }}</code>
+
+              <v-btn
+                style="position: absolute; right: 10px; top: 2px;"
+                icon
+                color="white"
+              >
+                <v-icon>mdi-download</v-icon>
+              </v-btn>
+
+              <v-btn
+                style="position: absolute; right: 50px; top: 2px;"
+                icon
+                color="white"
+                @click="copyToClipboard((newRunner || {}).private_key)"
               >
                 <v-icon>mdi-content-copy</v-icon>
               </v-btn>
