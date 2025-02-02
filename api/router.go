@@ -506,11 +506,7 @@ func serveFile(w http.ResponseWriter, r *http.Request, name string) {
 }
 
 func getSystemInfo(w http.ResponseWriter, r *http.Request) {
-	host := ""
-
-	if util.WebHostURL != nil {
-		host = util.WebHostURL.String()
-	}
+	host := util.GetPublicHost()
 
 	var authMethods LoginAuthMethods
 

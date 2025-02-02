@@ -893,7 +893,7 @@ func LookupDefaultApps() {
 	}
 }
 
-func GetPublicAliasURL(scope string, alias string) string {
+func GetPublicHost() string {
 	aliasURL := Config.WebHost
 	port := Config.Port
 	if port == "" {
@@ -907,6 +907,13 @@ func GetPublicAliasURL(scope string, alias string) string {
 	if aliasURL == "" {
 		aliasURL = "http://localhost:" + port
 	}
+
+	return aliasURL
+
+}
+
+func GetPublicAliasURL(scope string, alias string) string {
+	aliasURL := GetPublicHost()
 
 	if !strings.HasSuffix(aliasURL, "/") {
 		aliasURL += "/"

@@ -1,7 +1,7 @@
 <template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
   <div v-if="items != null">
 
-    <v-toolbar flat >
+    <v-toolbar flat>
       <v-app-bar-nav-icon @click="showDrawer()"></v-app-bar-nav-icon>
       <v-toolbar-title>
         {{ $t('dashboard2') }}
@@ -89,49 +89,96 @@
             </div>
           </div>
 
-          <div class="mb-4">
-            <div>{{ $t('runnerUsage') }}</div>
-            <div style="position: relative;">
-              <pre style="white-space: pre-wrap;
-                          background: gray;
-                          color: white;
-                          border-radius: 10px;
-                          margin-top: 5px;"
-                   class="pa-2"
-              >{{ runnerUsageCommand }}</pre>
+          <v-tabs v-model="usageTab" :show-arrows="false">
+            <v-tab key="config">Config file</v-tab>
+            <v-tab key="setup">Setup</v-tab>
+            <v-tab key="env">Env Vars</v-tab>
+            <v-tab key="docker">Docker</v-tab>
+          </v-tabs>
 
-              <v-btn
-                style="position: absolute; right: 10px; top: 10px;"
-                icon
-                color="white"
-                @click="copyToClipboard(runnerUsageCommand)"
-              >
-                <v-icon>mdi-content-copy</v-icon>
-              </v-btn>
-            </div>
-          </div>
+          <v-tabs-items v-model="usageTab">
+            <v-tab-item key="config">
+              <div style="position: relative;">
+                <pre style="overflow: auto;
+                            background: gray;
+                            color: white;
+                            border-radius: 10px;
+                            margin-top: 5px;"
+                     class="pa-2"
+                >{{ runnerConfigCommand }}</pre>
 
-          <div>
-            <div>{{ $t('runnerDockerCommand') }}</div>
-            <div style="position: relative;">
-              <pre style="white-space: pre-wrap;
-                          background: gray;
-                          color: white;
-                          border-radius: 10px;
-                          margin-top: 5px;"
-                   class="pa-2"
-              >{{ runnerDockerCommand }}</pre>
+                <v-btn
+                  style="position: absolute; right: 10px; top: 10px;"
+                  icon
+                  color="white"
+                  @click="copyToClipboard(runnerEnvCommand)"
+                >
+                  <v-icon>mdi-content-copy</v-icon>
+                </v-btn>
+              </div>
+            </v-tab-item>
+            <v-tab-item key="setup">
+              <div style="position: relative;">
+                <pre style="overflow: auto;
+                            background: gray;
+                            color: white;
+                            border-radius: 10px;
+                            margin-top: 5px;"
+                     class="pa-2"
+                >{{ runnerSetupCommand }}</pre>
 
-              <v-btn
-                style="position: absolute; right: 10px; top: 10px;"
-                icon
-                color="white"
-                @click="copyToClipboard(runnerDockerCommand)"
-              >
-                <v-icon>mdi-content-copy</v-icon>
-              </v-btn>
-            </div>
-          </div>
+                <v-btn
+                  style="position: absolute; right: 10px; top: 10px;"
+                  icon
+                  color="white"
+                  @click="copyToClipboard(runnerSetupCommand)"
+                >
+                  <v-icon>mdi-content-copy</v-icon>
+                </v-btn>
+              </div>
+            </v-tab-item>
+            <v-tab-item key="env">
+              <div style="position: relative;">
+                <pre style="overflow: auto;
+                            background: gray;
+                            color: white;
+                            border-radius: 10px;
+                            margin-top: 5px;"
+                     class="pa-2"
+                >{{ runnerEnvCommand }}</pre>
+
+                <v-btn
+                  style="position: absolute; right: 10px; top: 10px;"
+                  icon
+                  color="white"
+                  @click="copyToClipboard(runnerEnvCommand)"
+                >
+                  <v-icon>mdi-content-copy</v-icon>
+                </v-btn>
+              </div>
+            </v-tab-item>
+
+            <v-tab-item key="docker">
+              <div style="position: relative;">
+                <pre style="overflow: auto;
+                            background: gray;
+                            color: white;
+                            border-radius: 10px;
+                            margin-top: 5px;"
+                     class="pa-2"
+                >{{ runnerDockerCommand }}</pre>
+
+                <v-btn
+                  style="position: absolute; right: 10px; top: 10px;"
+                  icon
+                  color="white"
+                  @click="copyToClipboard(runnerDockerCommand)"
+                >
+                  <v-icon>mdi-content-copy</v-icon>
+                </v-btn>
+              </div>
+            </v-tab-item>
+          </v-tabs-items>
         </div>
       </template>
     </EditDialog>
@@ -257,9 +304,24 @@ export default {
   },
 
   computed: {
-    runnerUsageCommand() {
+    runnerConfigCommand() {
+      return `{
+  "web_host": "${this.webHost}",
+  "runner": {
+    "token": "${(this.newRunner || {}).token}",
+    "private_key_file": "/path/to/the/private/key"
+  }
+}`;
+    },
+
+    runnerSetupCommand() {
+      return 'semaphore runner setup';
+    },
+
+    runnerEnvCommand() {
       return `SEMAPHORE_WEB_ROOT=${this.webHost} \\
 SEMAPHORE_RUNNER_TOKEN=${(this.newRunner || {}).token} \\
+SEMAPHORE_RUNNER_PRIVATE_KEY_FILE=/path/to/the/private/key \\
 semaphore runner --no-config`;
     },
 
@@ -267,6 +329,8 @@ semaphore runner --no-config`;
       return `docker run \\
 -e SEMAPHORE_WEB_ROOT=${this.webHost} \\
 -e SEMAPHORE_RUNNER_TOKEN=${(this.newRunner || {}).token} \\
+-e SEMAPHORE_RUNNER_PRIVATE_KEY_FILE=/config.runner.key \\
+-v "/path/to/the/private/key:/config.runner.key" \\
 -d semaphoreui/runner:${this.version}`;
     },
   },
@@ -275,6 +339,7 @@ semaphore runner --no-config`;
     return {
       newRunnerTokenDialog: null,
       newRunner: null,
+      usageTab: null,
     };
   },
 
