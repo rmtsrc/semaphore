@@ -103,11 +103,6 @@ func (p *JobPool) hasRunningJobs() bool {
 
 func (p *JobPool) Register(configFilePath *string) (err error) {
 
-	if util.Config.Runner.TokenFile == "" {
-		err = fmt.Errorf("runner token file required")
-		return
-	}
-
 	ok := p.tryRegisterRunner(configFilePath)
 
 	if !ok {
@@ -349,7 +344,7 @@ func (p *JobPool) tryRegisterRunner(configFilePath *string) (ok bool) {
 		RegistrationToken: util.Config.Runner.RegistrationToken,
 		Webhook:           util.Config.Runner.Webhook,
 		MaxParallelTasks:  util.Config.Runner.MaxParallelTasks,
-		PublicKey:         publicKey,
+		PublicKey:         &publicKey,
 	})
 
 	if err != nil {
@@ -483,7 +478,35 @@ func generatePrivateKey(privateKeyFilePath string) (publicKey string, err error)
 		return
 	}
 
+	publicKeyFile.Flush()
+
 	publicKey = string(b.Bytes())
+	return
+}
+
+func decryptChunkedBytes(combinedCiphertext []byte, privateKey *rsa.PrivateKey) (fullPlaintext []byte, err error) {
+
+	rsaBlockSize := privateKey.PublicKey.N.BitLen() / 8 // e.g. 256 for 2048-bit key
+
+	// 3. Decrypt all chunks
+	for i := 0; i < len(combinedCiphertext); i += rsaBlockSize {
+		end := i + rsaBlockSize
+		if end > len(combinedCiphertext) {
+			// In case of partial/corrupted data
+			end = len(combinedCiphertext)
+		}
+		chunk := combinedCiphertext[i:end]
+
+		var decryptedChunk []byte
+		decryptedChunk, err = rsa.DecryptPKCS1v15(rand.Reader, privateKey, chunk)
+		if err != nil {
+			return
+		}
+
+		// 4. Append decrypted chunk to our full plaintext buffer
+		fullPlaintext = append(fullPlaintext, decryptedChunk...)
+	}
+
 	return
 }
 
@@ -519,7 +542,7 @@ func (p *JobPool) checkNewJobs() {
 
 	if resp.StatusCode >= 400 {
 
-		logger.ActionError(fmt.Errorf("error status code"), "send request", "the server returned an error"+strconv.Itoa(resp.StatusCode))
+		logger.ActionError(fmt.Errorf("error status code"), "send request", p.getResponseErrorMessage(resp))
 		return
 	}
 
@@ -540,7 +563,8 @@ func (p *JobPool) checkNewJobs() {
 			return
 		}
 
-		body, err = rsa.DecryptPKCS1v15(rand.Reader, pk, body)
+		body, err = decryptChunkedBytes(body, pk)
+
 		if err != nil {
 			logger.ActionError(err, "decrypt response body", "can not decrypt server's response body")
 			return

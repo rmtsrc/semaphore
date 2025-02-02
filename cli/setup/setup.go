@@ -27,12 +27,17 @@ func InteractiveRunnerSetup(conf *util.ConfigType) {
 
 	conf.Runner = &util.RunnerConfig{}
 
-	askValue("Path to the file where runner token will be stored", "", &conf.Runner.TokenFile)
+	needTokenFile := false
+	askConfirmation("Do you want to store token in external file?", false, &needTokenFile)
 
-	yes := false
-	askConfirmation("Do you have runner's token?", false, &yes)
+	if needTokenFile {
+		askValue("Path to the file where runner token will be stored", "", &conf.Runner.TokenFile)
+	}
 
-	if yes {
+	needToken := false
+	askConfirmation("Do you have runner's token?", false, &needToken)
+
+	if needToken {
 		token := ""
 		for {
 			askValue("Enter valid runner token", "", &token)
@@ -46,19 +51,22 @@ func InteractiveRunnerSetup(conf *util.ConfigType) {
 
 		conf.Runner.Token = token
 
-		pkFile := ""
-		askConfirmation("Do you have runner's private key file?", false, &yes)
-		for {
-			askValue("Enter path to the private key file", "", &pkFile)
+		hasPrivateKey := false
+		askConfirmation("Do you have runner's private key file?", false, &hasPrivateKey)
 
-			if pkFile == "" {
-				fmt.Println("Invalid private key file path")
-				continue
+		if hasPrivateKey {
+			pkFile := ""
+			for {
+				askValue("Enter path to the private key file", "", &pkFile)
+
+				if pkFile == "" {
+					fmt.Println("Invalid private key file path")
+					continue
+				}
+				break
 			}
-			break
+			conf.Runner.PrivateKeyFile = pkFile
 		}
-
-		conf.Runner.PrivateKeyFile = pkFile
 
 		return
 	}
@@ -80,6 +88,20 @@ func InteractiveRunnerSetup(conf *util.ConfigType) {
 		}
 
 		conf.Runner.RegistrationToken = regToken
+
+		pkFile := ""
+		for {
+			askValue("Enter path to the private key file (will be generated if not exists)", "", &pkFile)
+
+			if pkFile == "" {
+				fmt.Println("Invalid private key file path")
+				continue
+			}
+			break
+		}
+
+		conf.Runner.PrivateKeyFile = pkFile
+
 		return
 	}
 

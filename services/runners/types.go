@@ -53,10 +53,10 @@ type JobProgress struct {
 }
 
 type RunnerRegistration struct {
-	RegistrationToken string `json:"registration_token" binding:"required"`
-	Webhook           string `json:"webhook,omitempty"`
-	MaxParallelTasks  int    `json:"max_parallel_tasks"`
-	PublicKey         string `json:"public_key,omitempty"`
+	RegistrationToken string  `json:"registration_token" binding:"required"`
+	Webhook           string  `json:"webhook,omitempty"`
+	MaxParallelTasks  int     `json:"max_parallel_tasks"`
+	PublicKey         *string `json:"public_key,omitempty"`
 }
 
 type jobLogRecord struct {

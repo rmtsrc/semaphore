@@ -25,8 +25,12 @@ func doRunnerSetup() int {
 	config := &util.ConfigType{}
 
 	setup.InteractiveRunnerSetup(config)
-	resultConfigPath := setup.SaveConfig(config, "config-runner.json", persistentFlags.configPath)
+	resultConfigPath := setup.SaveConfig(config, "config.runner.json", persistentFlags.configPath)
 	util.ConfigInit(resultConfigPath, false)
+
+	if util.Config.Runner.RegistrationToken == "" && config.Runner.RegistrationToken != "" {
+		util.Config.Runner.RegistrationToken = config.Runner.RegistrationToken
+	}
 
 	if util.Config.Runner.RegistrationToken != "" {
 		taskPool := runners.JobPool{}

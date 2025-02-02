@@ -253,7 +253,7 @@ func ConfigInit(configPath string, noConfigFile bool) (usedConfigPath *string) {
 	Config.Apps = map[string]App{}
 
 	if !noConfigFile {
-		return loadConfigFile(configPath)
+		usedConfigPath = loadConfigFile(configPath)
 	}
 
 	loadConfigEnvironment()
@@ -282,7 +282,7 @@ func ConfigInit(configPath string, noConfigFile bool) (usedConfigPath *string) {
 		}
 	}
 
-	return nil
+	return
 }
 
 func loadConfigFile(configPath string) (usedConfigPath *string) {
