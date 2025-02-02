@@ -315,7 +315,18 @@ export default {
     },
 
     runnerSetupCommand() {
-      return 'semaphore runner setup';
+      return `
+cat << EOF >> /tmp/config.runner.stdin
+${this.webHost}
+no
+yes
+${(this.newRunner || {}).token}
+yes
+/path/to/the/private/key
+./
+EOF
+
+semaphore runner setup --config ./config.runner.json < /tmp/config.runner.stdin`;
     },
 
     runnerEnvCommand() {
