@@ -9,6 +9,7 @@
     </v-toolbar>
 
     <DashboardMenu
+      v-if="projectId"
       :project-id="projectId"
       project-type=""
       :can-update-project="can(USER_PERMISSIONS.updateProject)"
@@ -140,12 +141,22 @@
       color="hsl(348deg, 86%, 61%)"
       style="border-radius: 0;"
     >
-      Project Runners available only in <b>PRO</b> version.
+      <span v-if="projectId">
+        Project-level runners are only available in the <b>PRO</b> version.
+      </span>
+
+      <span v-else>
+        The open-source version has limited functionality;
+        full functionality is in the <b>PRO</b> version.
+      </span>
       <v-btn
-        class="ml-2"
+        class="ml-2 pr-2"
         color="hsl(348deg, 86%, 61%)"
         href="https://semaphoreui.com/pro"
-      >Upgrade</v-btn>
+      >
+        Learn more
+        <v-icon>mdi-chevron-right</v-icon>
+      </v-btn>
     </v-alert>
 
     <v-data-table
