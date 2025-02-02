@@ -75,7 +75,11 @@
                 icon
                 color="white"
               >
-                <v-icon>mdi-download</v-icon>
+                <v-icon
+                  @click="downloadFile(newRunner.private_key, 'text/plain', 'config.runner.key')"
+                >
+                  mdi-download
+                </v-icon>
               </v-btn>
 
               <v-btn
@@ -96,10 +100,12 @@
             <v-tab key="docker">Docker</v-tab>
           </v-tabs>
 
+          <v-divider style="margin-top: -1px;"/>
+
           <v-tabs-items v-model="usageTab">
             <v-tab-item key="config">
-              <div style="position: relative;" class="mt-3">
-                <div>Config file content:</div>
+              <div class="mt-3">Config file content:</div>
+              <div style="position: relative;">
                 <pre style="overflow: auto;
                             background: gray;
                             color: white;
@@ -118,8 +124,8 @@
                 </v-btn>
               </div>
 
-              <div class="mt-3">
-                <div>Launching the runner:</div>
+              <div class="mt-3">Launching the runner:</div>
+              <div>
                 <pre style="overflow: auto;
                   background: gray;
                   color: white;
@@ -130,8 +136,8 @@
               </div>
             </v-tab-item>
             <v-tab-item key="setup">
-              <div style="position: relative;" class="mt-3">
-                <div>Config file creation:</div>
+              <div class="mt-3">Config file creation:</div>
+              <div style="position: relative;">
                 <pre style="overflow: auto;
                             background: gray;
                             color: white;
@@ -157,13 +163,13 @@
                   color: white;
                   border-radius: 10px;
                   margin-top: 5px;"
-                 class="pa-2"
+                     class="pa-2"
                 >semaphore runner start --config /path/to/config/file</pre>
               </div>
             </v-tab-item>
             <v-tab-item key="env">
-              <div style="position: relative;" class="mt-3">
-                <div>Launching the runner:</div>
+              <div class="mt-3">Launching the runner:</div>
+              <div style="position: relative;">
                 <pre style="overflow: auto;
                             background: gray;
                             color: white;
@@ -184,8 +190,8 @@
             </v-tab-item>
 
             <v-tab-item key="docker">
-              <div style="position: relative;" class="mt-3">
-                <div>Launching the runner:</div>
+              <div class="mt-3">Launching the runner:</div>
+              <div style="position: relative;">
                 <pre style="overflow: auto;
                             background: gray;
                             color: white;
@@ -311,6 +317,7 @@ import EditDialog from '@/components/EditDialog.vue';
 import RunnerForm from '@/components/RunnerForm.vue';
 import axios from 'axios';
 import DashboardMenu from '@/components/DashboardMenu.vue';
+import delay from '@/lib/delay';
 
 export default {
   mixins: [ItemListPageBase],
@@ -380,6 +387,16 @@ semaphore runner start --no-config`;
   },
 
   methods: {
+    async downloadFile(content, type, name) {
+      const a = document.createElement('a');
+      const blob = new Blob([content], { type });
+      a.download = name;
+      a.href = URL.createObjectURL(blob);
+      a.click();
+
+      await delay(1000);
+    },
+
     async loadItemsAndShowRunnerDetails(e) {
       if (e.item.token) {
         this.newRunnerTokenDialog = true;
