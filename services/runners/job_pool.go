@@ -408,7 +408,7 @@ func (p *JobPool) tryRegisterRunner(configFilePath *string) (ok bool) {
 		}
 
 		config.Runner.Token = res.Token
-		configFileBuffer, err = json.Marshal(config)
+		configFileBuffer, err = json.MarshalIndent(&config, " ", "\t")
 		if err != nil {
 			logger.ActionError(err, "marshal config file", "can not marshal config file")
 			return
