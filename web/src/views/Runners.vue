@@ -7,6 +7,7 @@
         {{ $t('dashboard2') }}
       </v-toolbar-title>
     </v-toolbar>
+    <v-divider />
 
     <DashboardMenu
       v-if="projectId"
