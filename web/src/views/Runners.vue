@@ -93,6 +93,8 @@
             </div>
           </div>
 
+          <h2 class="mt-9 mb-3">Variants of usage</h2>
+
           <v-tabs v-model="usageTab" :show-arrows="false">
             <v-tab key="config">Config file</v-tab>
             <v-tab key="setup">Setup</v-tab>
@@ -118,7 +120,7 @@
                   style="position: absolute; right: 10px; top: 10px;"
                   icon
                   color="white"
-                  @click="copyToClipboard(runnerEnvCommand)"
+                  @click="copyToClipboard(runnerConfigCommand)"
                 >
                   <v-icon>mdi-content-copy</v-icon>
                 </v-btn>
@@ -132,7 +134,7 @@
                   border-radius: 10px;
                   margin-top: 5px;"
                      class="pa-2"
-                >semaphore runner start --config ./config.runner.json</pre>
+                >semaphore runner start --config /path/to/config/file</pre>
               </div>
             </v-tab-item>
             <v-tab-item key="setup">
@@ -164,7 +166,7 @@
                   border-radius: 10px;
                   margin-top: 5px;"
                      class="pa-2"
-                >semaphore runner start --config /path/to/config/file</pre>
+                >semaphore runner start --config ./config.runner.json</pre>
               </div>
             </v-tab-item>
             <v-tab-item key="env">
@@ -342,7 +344,7 @@ export default {
   "web_host": "${this.webHost}",
   "runner": {
     "token": "${(this.newRunner || {}).token}",
-    "private_key_file": "/path/to/the/private/key"
+    "private_key_file": "/path/to/private/key"
   }
 }`;
     },
@@ -354,7 +356,7 @@ no
 yes
 ${(this.newRunner || {}).token}
 yes
-/path/to/the/private/key
+/path/to/private/key
 ./
 EOF
 
@@ -364,7 +366,7 @@ semaphore runner setup --config ./config.runner.json < /tmp/config.runner.stdin`
     runnerEnvCommand() {
       return `SEMAPHORE_WEB_ROOT=${this.webHost} \\
 SEMAPHORE_RUNNER_TOKEN=${(this.newRunner || {}).token} \\
-SEMAPHORE_RUNNER_PRIVATE_KEY_FILE=/path/to/the/private/key \\
+SEMAPHORE_RUNNER_PRIVATE_KEY_FILE=/path/to/private/key \\
 semaphore runner start --no-config`;
     },
 
@@ -373,7 +375,7 @@ semaphore runner start --no-config`;
 -e SEMAPHORE_WEB_ROOT=${this.webHost} \\
 -e SEMAPHORE_RUNNER_TOKEN=${(this.newRunner || {}).token} \\
 -e SEMAPHORE_RUNNER_PRIVATE_KEY_FILE=/config.runner.key \\
--v "/path/to/the/private/key:/config.runner.key" \\
+-v "/path/to/private/key:/config.runner.key" \\
 -d semaphoreui/runner:${this.version}`;
     },
   },
