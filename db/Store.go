@@ -508,16 +508,20 @@ var ViewProps = ObjectProps{
 }
 
 var RunnerProps = ObjectProps{
-	TableName:         "runner",
-	Type:              reflect.TypeOf(Runner{}),
-	PrimaryColumnName: "id",
+	TableName:            "runner",
+	Type:                 reflect.TypeOf(Runner{}),
+	DefaultSortingColumn: "id",
+	PrimaryColumnName:    "id",
+	SortInverted:         true,
 }
 
 var GlobalRunnerProps = ObjectProps{
-	TableName:         "runner",
-	Type:              reflect.TypeOf(Runner{}),
-	PrimaryColumnName: "id",
-	IsGlobal:          true,
+	TableName:            "runner",
+	Type:                 reflect.TypeOf(Runner{}),
+	PrimaryColumnName:    "id",
+	DefaultSortingColumn: "id",
+	SortInverted:         true,
+	IsGlobal:             true,
 }
 
 var OptionProps = ObjectProps{

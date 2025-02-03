@@ -350,7 +350,7 @@ export default {
     },
 
     runnerSetupCommand() {
-      return `cat << EOF >> /tmp/config.runner.stdin
+      return `cat << EOF > /tmp/config.runner.stdin
 ${this.webHost}
 no
 yes
