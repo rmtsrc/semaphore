@@ -93,7 +93,7 @@
             </div>
           </div>
 
-          <h2 class="mt-9 mb-3">Variants of usage</h2>
+          <h2 class="mt-11 mb-4">Variants of usage</h2>
 
           <v-tabs v-model="usageTab" :show-arrows="false">
             <v-tab key="config">Config file</v-tab>
