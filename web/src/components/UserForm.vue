@@ -107,7 +107,7 @@
         </v-form>
       </v-tab-item>
 
-      <v-tab-item key="2fa" class="pb-4" v-if="item != null">
+      <v-tab-item key="2fa" v-if="item != null">
 
         <div v-if="!isNew">
           <div class="title mb-3">Password</div>
@@ -188,23 +188,10 @@ export default {
     return {
       passwordDialog: null,
       totpEnabled: false,
+      totpQrUrl: null,
+
       tab: null,
     };
-  },
-
-  computed: {
-    totpQrUrl() {
-      if (!this.totpEnabled || this.item == null || this.item.totp == null) {
-        return null;
-      }
-
-      let baseURI = document.baseURI;
-      if (baseURI.endsWith('/')) {
-        baseURI = baseURI.substring(0, baseURI.length - 1);
-      }
-
-      return `${baseURI}/api/users/${this.itemId}/2fas/totp/${this.item.totp.id}/qr`;
-    },
   },
 
   watch: {
@@ -224,6 +211,13 @@ export default {
             url: `/api/users/${this.itemId}/2fas/totp`,
             responseType: 'json',
           })).data;
+
+          // let baseURI = document.baseURI;
+          // if (baseURI.endsWith('/')) {
+          //   baseURI = baseURI.substring(0, baseURI.length - 1);
+          // }
+
+          this.totpQrUrl = `${document.baseURI}api/users/${this.itemId}/2fas/totp/${this.item.totp.id}/qr`;
         }
       } else if (this.item.totp != null) {
         await axios({
@@ -232,13 +226,20 @@ export default {
           responseType: 'json',
         });
         this.item.totp = null;
+        this.totpQrUrl = null;
       }
     },
   },
 
   methods: {
     afterLoadData() {
-      this.totpEnabled = this.item.totp != null;
+      if (this.item.totp == null) {
+        this.totpEnabled = false;
+        this.totpQrUrl = null;
+      } else {
+        this.totpEnabled = true;
+        this.totpQrUrl = `${document.baseURI}api/users/${this.itemId}/2fas/totp/${this.item.totp.id}/qr`;
+      }
     },
 
     async copyToClipboard(text) {
