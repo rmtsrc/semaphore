@@ -242,6 +242,8 @@
 import axios from 'axios';
 import { getErrorMessage } from '@/lib/error';
 
+const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
+
 export default {
   data() {
     return {
@@ -254,6 +256,7 @@ export default {
 
       loginHelpDialog: null,
 
+      darkMode: false,
       oidcProviders: [],
       loginWithPassword: null,
       authMethods: {},
@@ -264,6 +267,12 @@ export default {
       verificationMethod: null,
       recoveryCode: null,
     };
+  },
+
+  watch: {
+    darkMode(val) {
+      this.$vuetify.theme.dark = val;
+    },
   },
 
   async created() {
@@ -283,6 +292,19 @@ export default {
         break;
       default:
         throw new Error(`Unknown authentication status: ${status}`);
+    }
+
+    const isDarkMode = localStorage.getItem('darkMode');
+    if (isDarkMode !== null) {
+      this.darkMode = isDarkMode === '1';
+    } else {
+      prefersDarkMode.addEventListener('change', (e) => {
+        this.darkMode = e.matches;
+      });
+
+      if (prefersDarkMode.matches && localStorage.getItem('darkMode') !== '0') {
+        this.darkMode = true;
+      }
     }
   },
 
