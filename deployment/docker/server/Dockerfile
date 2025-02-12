@@ -27,6 +27,7 @@ RUN --mount=type=cache,target=/go/pkg \
 ENV OPENTOFU_VERSION="1.7.0"
 ENV TERRAFORM_VERSION="1.10.3"
 #ENV PULUMI_VERSION="3.116.1"
+#ENV POWERSHELL_VERSION="3.116.1"
 
 RUN wget https://github.com/opentofu/opentofu/releases/download/v${OPENTOFU_VERSION}/tofu_${OPENTOFU_VERSION}_linux_${TARGETARCH}.tar.gz && \
     tar xf tofu_${OPENTOFU_VERSION}_linux_${TARGETARCH}.tar.gz -C /tmp && \
@@ -89,6 +90,17 @@ RUN apk add --no-cache -U python3-dev build-base openssl-dev libffi-dev cargo &&
      rm -rf /var/cache/apk/* && \
      find ${ANSIBLE_VENV_PATH} -iname __pycache__ | xargs rm -rf && \
      chown -R semaphore:0 /opt/semaphore
+
+
+RUN if [ "$TARGETARCH" = "amd64" ]; then \
+      export PULUMI_ARCH="x64"; \
+    else \
+      export PULUMI_ARCH="${TARGETARCH}"; \
+    fi && \
+    wget -O pulumi.tar.gz https://github.com/pulumi/pulumi/releases/download/v${PULUMI_VERSION}/pulumi-v${PULUMI_VERSION}-linux-${PULUMI_ARCH}.tar.gz
+RUN tar xf pulumi.tar.gz --strip-components=1 -C /usr/local/bin
+RUN rm pulumi.tar.gz
+
 
 USER 1001
 
