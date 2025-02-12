@@ -305,6 +305,14 @@ func (b *BackupDB) format() (*BackupFormat, error) {
 			Inventory, _ = findNameByID[db.Inventory](*o.InventoryID, b.inventories)
 		}
 
+		surveyVars := make([]db.SurveyVar, 0)
+		err := json.Unmarshal([]byte(*o.SurveyVarsJSON), &surveyVars)
+		if err != nil {
+			return nil, err
+		}
+
+		o.SurveyVars = surveyVars
+
 		templates[i] = BackupTemplate{
 			Template:      o,
 			View:          View,
