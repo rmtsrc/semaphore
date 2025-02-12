@@ -144,6 +144,7 @@
                 class="mt-6"
                 outlined
                 v-model="recoveryCode"
+                @keyup.enter.native="signIn"
                 :label="$t('Recovery code')"
                 :rules="[v => !!v || $t('recoveryCode_required')]"
                 required
@@ -387,7 +388,7 @@ export default {
         document.location = document.baseURI + window.location.search;
       } catch (err) {
         if (err.response.status === 401) {
-          this.signInError = this.$t('incorrectUsrPwd');
+          this.signInError = this.$t('Incorrect verification code.');
         } else {
           this.signInError = getErrorMessage(err);
         }

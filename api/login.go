@@ -723,5 +723,9 @@ func oidcRedirect(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if redirectPath == "" {
+		redirectPath = "/"
+	}
+
 	http.Redirect(w, r, redirectPath, http.StatusTemporaryRedirect)
 }
