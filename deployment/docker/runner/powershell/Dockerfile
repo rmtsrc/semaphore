@@ -28,7 +28,6 @@ RUN wget -O /tmp/powershell.tar.gz https://github.com/PowerShell/PowerShell/rele
 RUN mkdir -p /opt/microsoft/powershell/${POWERSHELL_VERSION} \
     && tar zxf /tmp/powershell.tar.gz -C /opt/microsoft/powershell/${POWERSHELL_VERSION} \
     && rm /tmp/powershell.tar.gz \
-    && ln -s /opt/microsoft/powershell/${POWERSHELL_VERSION}/pwsh /usr/local/bin/pwsh \
-    && ln -s /opt/microsoft/powershell/${POWERSHELL_VERSION}/pwsh /usr/local/bin/powershell
+    && ln -s /opt/microsoft/powershell/${POWERSHELL_VERSION}/pwsh /usr/bin/pwsh
 
 USER 1001
