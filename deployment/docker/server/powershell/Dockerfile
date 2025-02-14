@@ -10,10 +10,9 @@ USER root
 
 # Install dependencies
 RUN apk add --no-cache \
-    curl \
     ca-certificates \
     less \
-    ncurses \
+    ncurses-terminfo-base \
     krb5-libs \
     libgcc \
     libintl \
@@ -21,13 +20,20 @@ RUN apk add --no-cache \
     libstdc++ \
     tzdata \
     userspace-rcu \
-    zlib
+    zlib \
+    icu-libs \
+    curl
 
-RUN wget -O /tmp/powershell.tar.gz https://github.com/PowerShell/PowerShell/releases/download/v${POWERSHELL_VERSION}/powershell-${POWERSHELL_VERSION}-linux-${TARGETARCH/amd/x}.tar.gz
+apk -X https://dl-cdn.alpinelinux.org/alpine/edge/main add --no-cache \
+    lttng-ust \
+    openssh-client
+
+RUN wget -O /tmp/powershell.tar.gz https://github.com/PowerShell/PowerShell/releases/download/v${POWERSHELL_VERSION}/powershell-${POWERSHELL_VERSION}-linux-musl-${TARGETARCH/amd/x}.tar.gz
 
 RUN mkdir -p /opt/microsoft/powershell/${POWERSHELL_VERSION} \
     && tar zxf /tmp/powershell.tar.gz -C /opt/microsoft/powershell/${POWERSHELL_VERSION} \
     && rm /tmp/powershell.tar.gz \
+    && chmod +x /opt/microsoft/powershell/${POWERSHELL_VERSION}/pwsh \
     && ln -s /opt/microsoft/powershell/${POWERSHELL_VERSION}/pwsh /usr/local/bin/pwsh \
     && ln -s /opt/microsoft/powershell/${POWERSHELL_VERSION}/pwsh /usr/local/bin/powershell
 
