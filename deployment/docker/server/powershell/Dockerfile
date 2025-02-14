@@ -24,7 +24,7 @@ RUN apk add --no-cache \
     icu-libs \
     curl
 
-apk -X https://dl-cdn.alpinelinux.org/alpine/edge/main add --no-cache \
+RUN apk -X https://dl-cdn.alpinelinux.org/alpine/edge/main add --no-cache \
     lttng-ust \
     openssh-client
 
