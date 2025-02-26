@@ -169,7 +169,7 @@ export default {
   buildTemplate: 'Modello di build',
   autorun: 'Esecuzione automatica',
   playbookFilename: 'Nome file playbook *',
-  exampleSiteyml: 'Esempio: site.yml',
+  exampleSiteyml: 'Esempio: deploy/site.yml',
   inventory2: 'Inventario *',
   repository: 'Repository',
   environment3: 'Ambiente *',

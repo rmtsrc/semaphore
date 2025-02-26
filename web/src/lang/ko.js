@@ -169,7 +169,7 @@ export default {
   buildTemplate: '빌드 템플릿',
   autorun: '자동 실행',
   playbookFilename: '플레이북 파일 이름 *',
-  exampleSiteyml: '예: site.yml',
+  exampleSiteyml: '예: deploy/site.yml',
   inventory2: '인벤토리 *',
   repository: '리포지토리',
   environment3: '환경 *',

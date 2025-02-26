@@ -169,7 +169,7 @@ export default {
   buildTemplate: 'ビルドテンプレート',
   autorun: '自動実行',
   playbookFilename: 'プレイブックファイル名 *',
-  exampleSiteyml: '例: site.yml',
+  exampleSiteyml: '例: deploy/site.yml',
   inventory2: 'インベントリ *',
   repository: 'リポジトリ',
   environment3: '環境 *',

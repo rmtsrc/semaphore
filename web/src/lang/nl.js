@@ -169,7 +169,7 @@ export default {
   buildTemplate: 'Bouwsjabloon',
   autorun: 'Automatisch uitvoeren',
   playbookFilename: 'Playbook-bestandsnaam *',
-  exampleSiteyml: 'Voorbeeld: site.yml',
+  exampleSiteyml: 'Voorbeeld: deploy/site.yml',
   inventory2: 'Inventaris *',
   repository: 'Repository',
   environment3: 'Omgeving *',
