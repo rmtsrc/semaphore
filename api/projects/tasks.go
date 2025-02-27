@@ -116,7 +116,7 @@ func GetTaskMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// GetTaskOutput returns the logged task output by id and writes it as json or returns error
+// GetTaskStages returns the logged task stages by id and writes it as json or returns error
 func GetTaskStages(w http.ResponseWriter, r *http.Request) {
 	task := context.Get(r, "task").(db.Task)
 	project := context.Get(r, "project").(db.Project)
