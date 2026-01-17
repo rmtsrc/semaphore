@@ -1333,11 +1333,12 @@ export default {
     if (isDarkMode !== null) {
       this.darkMode = isDarkMode === '1';
     } else {
-      prefersDarkMode.addEventListener('change', (e) => {
+      this.darkModeListener = (e) => {
         this.darkMode = e.matches;
-      });
+      };
+      prefersDarkMode.addEventListener('change', this.darkModeListener);
 
-      if (prefersDarkMode.matches && localStorage.getItem('darkMode') !== '0') {
+      if (prefersDarkMode.matches) {
         this.darkMode = true;
       }
     }
@@ -1498,6 +1499,12 @@ export default {
           break;
       }
     });
+  },
+
+  beforeDestroy() {
+    if (this.darkModeListener) {
+      prefersDarkMode.removeEventListener('change', this.darkModeListener);
+    }
   },
 
   methods: {
