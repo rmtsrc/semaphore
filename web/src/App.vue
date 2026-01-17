@@ -979,8 +979,7 @@ import YesNoDialog from '@/components/YesNoDialog.vue';
 import TaskLogDialog from '@/components/TaskLogDialog.vue';
 import SystemInfoDialog from '@/components/SystemInfoDialog.vue';
 import delay from '@/lib/delay';
-
-const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)');
+import darkModeMixin from '@/lib/darkMode';
 
 const PROJECT_COLORS = ['red', 'blue', 'orange', 'green'];
 
@@ -1054,6 +1053,7 @@ function getSystemLang() {
 
 export default {
   name: 'App',
+  mixins: [darkModeMixin],
   components: {
     SubscriptionForm,
     TaskLogDialog,
@@ -1149,20 +1149,6 @@ export default {
 
       if (this.unpinnedNavItems.some((item) => val.path.includes(`/${item.key}`))) {
         this.showMoreToggle = true;
-      }
-    },
-
-    darkMode(val) {
-      this.$vuetify.theme.dark = val;
-      // Native scrollbars (and other browser-drawn chrome) follow the theme;
-      // otherwise a light scrollbar track shows up on dark pages.
-      document.documentElement.style.colorScheme = val ? 'dark' : 'light';
-      if (val && !prefersDarkMode.matches) {
-        localStorage.setItem('darkMode', '1');
-      } else if (!val && prefersDarkMode.matches) {
-        localStorage.setItem('darkMode', '0');
-      } else {
-        localStorage.removeItem('darkMode');
       }
     },
   },
@@ -1329,19 +1315,7 @@ export default {
   },
 
   async created() {
-    const isDarkMode = localStorage.getItem('darkMode');
-    if (isDarkMode !== null) {
-      this.darkMode = isDarkMode === '1';
-    } else {
-      this.darkModeListener = (e) => {
-        this.darkMode = e.matches;
-      };
-      prefersDarkMode.addEventListener('change', this.darkModeListener);
-
-      if (prefersDarkMode.matches) {
-        this.darkMode = true;
-      }
-    }
+    this.initDarkMode();
 
     try {
       await this.loadData();
@@ -1499,12 +1473,6 @@ export default {
           break;
       }
     });
-  },
-
-  beforeDestroy() {
-    if (this.darkModeListener) {
-      prefersDarkMode.removeEventListener('change', this.darkModeListener);
-    }
   },
 
   methods: {
