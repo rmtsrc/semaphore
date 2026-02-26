@@ -2,7 +2,6 @@
 
 [![Auto Merge Latest Release](https://github.com/rmtsrc/semaphore/actions/workflows/auto-merge-release.yml/badge.svg)](https://github.com/rmtsrc/semaphore/actions/workflows/auto-merge-release.yml)
 [![GitHub Container Registry](https://img.shields.io/badge/ghcr-semaphore-blue?logo=docker)](https://github.com/rmtsrc/semaphore/pkgs/container/semaphore)
-[![Branches](https://img.shields.io/badge/branches-view-green?logo=git)](https://github.com/rmtsrc/semaphore/branches)
 
 This fork automatically builds a modified version of [Semaphore UI](https://github.com/semaphoreui/semaphore) from the latest release, based on the patches listed in [auto-merge-release.yml](.github/workflows/auto-merge-release.yml#L67-L70).
 
