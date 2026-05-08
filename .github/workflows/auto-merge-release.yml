@@ -68,6 +68,10 @@ jobs:
           git commit -am "Merge prefers-color-scheme into ${{ steps.latest_release.outputs.tag_name }}"
           git diff upstream/develop...origin/use-locale-datetime | git apply --3way
           git commit -am "Merge use-locale-datetime into ${{ steps.latest_release.outputs.tag_name }}"
+          git rm -rf .github
+          git commit -am "Remove .github"
+          git tag merged-${{ steps.latest_release.outputs.tag_name }}
+          git push origin merged-${{ steps.latest_release.outputs.tag_name }}
 
       - name: Set up Docker Buildx
         if: steps.check_tag.outputs.exists == 'false'
