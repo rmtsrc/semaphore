@@ -910,6 +910,7 @@ import YesNoDialog from '@/components/YesNoDialog.vue';
 import TaskLogDialog from '@/components/TaskLogDialog.vue';
 import SystemInfoDialog from '@/components/SystemInfoDialog.vue';
 import delay from '@/lib/delay';
+import darkModeMixin from '@/lib/darkMode';
 
 const PROJECT_COLORS = ['red', 'blue', 'orange', 'green'];
 
@@ -980,6 +981,7 @@ function getSystemLang() {
 
 export default {
   name: 'App',
+  mixins: [darkModeMixin],
   components: {
     SubscriptionForm,
     TaskLogDialog,
@@ -1062,15 +1064,6 @@ export default {
         EventBus.$emit('i-new-project', { projectType: this.$route.query.new_project });
       }
     },
-
-    darkMode(val) {
-      this.$vuetify.theme.dark = val;
-      if (val) {
-        localStorage.setItem('darkMode', '1');
-      } else {
-        localStorage.removeItem('darkMode');
-      }
-    },
   },
 
   computed: {
@@ -1112,9 +1105,7 @@ export default {
   },
 
   async created() {
-    if (localStorage.getItem('darkMode') === '1') {
-      this.darkMode = true;
-    }
+    this.initDarkMode();
 
     try {
       await this.loadData();
