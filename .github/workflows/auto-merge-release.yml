@@ -38,28 +38,18 @@ jobs:
             https://api.github.com/repos/ansible-semaphore/semaphore/releases/latest)
 
           latest_release_tag_name=$(echo "$latest_commit" | jq -r '.tag_name')
-          echo "tag_name=$latest_release_tag_name" >> $GITHUB_OUTPUT
-
-      - name: Update current_version.txt
-        run: |
-          tag_name="${{ steps.latest_release.outputs.tag_name }}"
-          echo "$tag_name" > current_version.txt
-          if [ -n "$(git status --porcelain current_version.txt)" ]; then
-            git add current_version.txt
-            git commit -m "Update current_version.txt to $tag_name"
-            git push
-          fi
+          echo "tag_name=$latest_release_tag_name" >> "$GITHUB_OUTPUT"
 
       - name: Check if Docker image tag exists
         id: check_tag
         run: |
-          if docker manifest inspect ghcr.io/${{ github.repository }}:${{ steps.latest_release.outputs.tag_name }} > /dev/null 2>&1; then
-            echo "exists=true" >> $GITHUB_OUTPUT
+          if docker manifest inspect "ghcr.io/${{ github.repository }}:${{ steps.latest_release.outputs.tag_name }}" > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
           else
-            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Create and merge release tag
+      - name: Create merged release commit
         if: steps.check_tag.outputs.exists == 'false'
         run: |
           git fetch upstream --tags --force
@@ -70,8 +60,6 @@ jobs:
           git commit -am "Merge use-locale-datetime into ${{ steps.latest_release.outputs.tag_name }}"
           git rm -rf .github
           git commit -am "Remove .github"
-          git tag merged-${{ steps.latest_release.outputs.tag_name }}
-          git push origin merged-${{ steps.latest_release.outputs.tag_name }}
 
       - name: Set up Docker Buildx
         if: steps.check_tag.outputs.exists == 'false'
@@ -95,3 +83,19 @@ jobs:
             -t ghcr.io/${{ github.repository }}:latest \
             -t ghcr.io/${{ github.repository }}:${{ steps.latest_release.outputs.tag_name }} \
             --push .
+
+      - name: Tag merged release and update current_version.txt
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          tag_name="${{ steps.latest_release.outputs.tag_name }}"
+
+          git tag "merged-$tag_name"
+          git push origin "merged-$tag_name"
+
+          git checkout "${{ github.ref_name }}"
+          echo "$tag_name" > current_version.txt
+          if [ -n "$(git status --porcelain current_version.txt)" ]; then
+            git add current_version.txt
+            git commit -m "Update current_version.txt to $tag_name"
+            git push
+          fi
