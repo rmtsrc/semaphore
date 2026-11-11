@@ -6,6 +6,12 @@ import {
 
 const ESC = String.fromCharCode(27);
 
+const formatLocalizedDateTime = (jsDate) => {
+  const dateOptions = { year: 'numeric', month: '2-digit', day: '2-digit' };
+  const timeOptions = { hour: '2-digit', minute: '2-digit' };
+  return `${jsDate.toLocaleDateString(undefined, dateOptions)} ${jsDate.toLocaleTimeString(undefined, timeOptions)}`;
+};
+
 describe('plugins/filters', () => {
   describe('formatMilliseconds', () => {
     it('returns a dash for empty values', () => {
@@ -54,13 +60,13 @@ describe('plugins/filters', () => {
       if (dayjs().isSame(date, 'day')) {
         expect(result).to.equal(`2 hours ago (${date.format('HH:mm')})`);
       } else {
-        expect(result).to.equal(date.format('L HH:mm'));
+        expect(result).to.equal(formatLocalizedDateTime(date.toDate()));
       }
     });
 
     it('shows the localized date and time for other days', () => {
       const date = dayjs('2020-03-04T05:06:00');
-      expect(formatDate(date.toISOString())).to.equal(date.format('L HH:mm'));
+      expect(formatDate(date.toISOString())).to.equal(formatLocalizedDateTime(date.toDate()));
     });
   });
 
@@ -73,7 +79,7 @@ describe('plugins/filters', () => {
     it('format a date and a time', () => {
       const date = dayjs('2020-03-04T05:06:07');
       expect(formatDate2(date.toISOString())).to.equal(date.format('LL'));
-      expect(formatTime(date.toISOString())).to.equal(date.format('LTS'));
+      expect(formatTime(date.toISOString())).to.equal(date.toDate().toLocaleTimeString());
     });
   });
 

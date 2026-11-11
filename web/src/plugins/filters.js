@@ -52,12 +52,15 @@ export function formatDate(value) {
   if (now.isSame(date, 'day')) {
     return `${date.fromNow()} (${date.format('HH:mm')})`;
   }
-  return date.format('L HH:mm');
+  const jsDate = date.toDate();
+  const dateOptions = { year: 'numeric', month: '2-digit', day: '2-digit' };
+  const timeOptions = { hour: '2-digit', minute: '2-digit' };
+  return `${jsDate.toLocaleDateString(undefined, dateOptions)} ${jsDate.toLocaleTimeString(undefined, timeOptions)}`;
 }
 
 // formatTime: localized time with seconds
 export function formatTime(value) {
-  return value ? dayjs(String(value)).format('LTS') : EMPTY;
+  return value ? dayjs(String(value)).toDate().toLocaleTimeString() : EMPTY;
 }
 
 // formatLog: ANSI → HTML
