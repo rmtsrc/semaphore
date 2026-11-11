@@ -301,8 +301,10 @@
 import axios from 'axios';
 import { getErrorMessage } from '@/lib/error';
 import EventBus from '@/event-bus';
+import darkModeMixin from '@/lib/darkMode';
 
 export default {
+  mixins: [darkModeMixin],
   data() {
     return {
       signInFormValid: false,
@@ -316,6 +318,7 @@ export default {
 
       loginHelpDialog: null,
 
+      darkMode: false,
       oidcProviders: [],
       loginWithPassword: null,
       authMethods: {},
@@ -350,6 +353,8 @@ export default {
       default:
         throw new Error(`Unknown authentication status: ${status}`);
     }
+
+    this.initDarkMode();
   },
 
   computed: {

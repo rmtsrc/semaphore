@@ -979,6 +979,7 @@ import YesNoDialog from '@/components/YesNoDialog.vue';
 import TaskLogDialog from '@/components/TaskLogDialog.vue';
 import SystemInfoDialog from '@/components/SystemInfoDialog.vue';
 import delay from '@/lib/delay';
+import darkModeMixin from '@/lib/darkMode';
 
 const PROJECT_COLORS = ['red', 'blue', 'orange', 'green'];
 
@@ -1052,6 +1053,7 @@ function getSystemLang() {
 
 export default {
   name: 'App',
+  mixins: [darkModeMixin],
   components: {
     SubscriptionForm,
     TaskLogDialog,
@@ -1147,18 +1149,6 @@ export default {
 
       if (this.unpinnedNavItems.some((item) => val.path.includes(`/${item.key}`))) {
         this.showMoreToggle = true;
-      }
-    },
-
-    darkMode(val) {
-      this.$vuetify.theme.dark = val;
-      // Native scrollbars (and other browser-drawn chrome) follow the theme;
-      // otherwise a light scrollbar track shows up on dark pages.
-      document.documentElement.style.colorScheme = val ? 'dark' : 'light';
-      if (val) {
-        localStorage.setItem('darkMode', '1');
-      } else {
-        localStorage.removeItem('darkMode');
       }
     },
   },
@@ -1325,9 +1315,7 @@ export default {
   },
 
   async created() {
-    if (localStorage.getItem('darkMode') === '1') {
-      this.darkMode = true;
-    }
+    this.initDarkMode();
 
     try {
       await this.loadData();
